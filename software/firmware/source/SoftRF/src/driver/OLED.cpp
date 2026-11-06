@@ -1114,17 +1114,23 @@ void OLED_info2()
     case DISPLAY_OLED_HELTEC:
     case DISPLAY_OLED_1_3:
     default:
-
-      u8x8->draw2x2String( 0, 0, "RTC");
-      u8x8->draw2x2String(14, 0, hw_info.rtc != RTC_NONE ? "+" : "-");
-      u8x8->draw2x2String( 0, 2, "IMU");
-      u8x8->draw2x2String(14, 2, hw_info.imu != IMU_NONE ? "+" : "-");
-      u8x8->draw2x2String( 0, 4, "MAG");
-      u8x8->draw2x2String(14, 4, hw_info.mag != MAG_NONE ? "+" : "-");
-      u8x8->draw2x2String( 0, 6, "CARD");
-      u8x8->draw2x2String(14, 6, hw_info.storage == STORAGE_CARD ||
-                                 hw_info.storage == STORAGE_FLASH_AND_CARD ?
-                                                           "+" : "-");
+      if (hw_info.model == SOFTRF_MODEL_PRIME_MK4) {
+        u8x8->draw2x2String( 0, 0, "CARD");
+        u8x8->draw2x2String(14, 0, hw_info.storage == STORAGE_CARD ||
+                                   hw_info.storage == STORAGE_FLASH_AND_CARD ?
+                                                             "+" : "-");
+      } else {
+        u8x8->draw2x2String( 0, 0, "RTC");
+        u8x8->draw2x2String(14, 0, hw_info.rtc != RTC_NONE ? "+" : "-");
+        u8x8->draw2x2String( 0, 2, "IMU");
+        u8x8->draw2x2String(14, 2, hw_info.imu != IMU_NONE ? "+" : "-");
+        u8x8->draw2x2String( 0, 4, "MAG");
+        u8x8->draw2x2String(14, 4, hw_info.mag != MAG_NONE ? "+" : "-");
+        u8x8->draw2x2String( 0, 6, "CARD");
+        u8x8->draw2x2String(14, 6, hw_info.storage == STORAGE_CARD ||
+                                   hw_info.storage == STORAGE_FLASH_AND_CARD ?
+                                                             "+" : "-");
+      }
       break;
     }
 

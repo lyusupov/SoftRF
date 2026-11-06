@@ -3437,6 +3437,7 @@ static void ESP32_post_init()
     defined(CONFIG_IDF_TARGET_ESP32S31) || \
     defined(CONFIG_IDF_TARGET_ESP32P4)
     if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME ||
+        esp32_board == ESP32_TTGO_T_BEAM_1W      ||
         esp32_board == ESP32_P4_WT_DEVKIT)
     {
       char key[8];
@@ -3449,7 +3450,8 @@ static void ESP32_post_init()
       char *reg, *mam, *cn;
       reg = mam = cn = NULL;
 
-      if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME) {
+      if (esp32_board == ESP32_TTGO_T_BEAM_SUPREME ||
+          esp32_board == ESP32_TTGO_T_BEAM_1W) {
         OLED_info2();
       }
 
