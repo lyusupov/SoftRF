@@ -2455,7 +2455,7 @@ static void lr20xx_setup()
       bw = 555.6;
       break;
     case RF_RX_BANDWIDTH_SS_1567KHZ:
-      bw = 3076.0;
+      bw = 3076.0; /* 2222 */
       break;
     case RF_RX_BANDWIDTH_SS_125KHZ:
     default:

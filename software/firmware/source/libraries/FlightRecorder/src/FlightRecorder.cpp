@@ -480,9 +480,9 @@ int writeIGCHeader(uint8_t y, uint8_t m, uint8_t d, config_t &config, SdFat *SD_
       if (result) result = writeHRecord("HFGTYGLIDERTYPE: %s",config.type);
       if (result) result = writeHRecord("HFGIDGLIDERID: %s",config.reg);
       if (result) result = writeHRecord("HFDTM100GPSDATUM: WGS-1984");
-      if (result) result = writeHRecord("HFRFWFIRMWAREVERSION: 1.4");
+      if (result) result = writeHRecord("HFRFWFIRMWAREVERSION: 1.10");
       if (result) result = writeHRecord("HFRHWHARDWAREVERSION: 1.0");
-      if (result) result = writeHRecord("HFFTYFRTYPE: SoftRF,Prime Mark III");
+      if (result) result = writeHRecord("HFFTYFRTYPE: SoftRF,Prime Mark III or IV");
       if (result) result = writeHRecord("HFGPSRECEIVER: %s",_gnss_type);
       if (result) result = writeHRecord("HFALGALTGPS:GEO");     // for non IGC loggers
       if (result) result = writeHRecord("HFALPALTPRESSURE:ISA");
