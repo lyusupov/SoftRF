@@ -17,6 +17,9 @@ void adc2_calibrate_voltage(adc2_channel_t, adc_atten_t atten = ADC_ATTEN_DB_11)
 
 #define calibrate_voltage adc1_calibrate_voltage
 
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+float getTempForNTC(int);
+#endif /* CONFIG_IDF_TARGET_ESP32S3 */
 #else
 void calibrate_voltage(uint8_t, adc_attenuation_t atten = ADC_11db);
 #endif /* ESP_IDF_VERSION_MAJOR */

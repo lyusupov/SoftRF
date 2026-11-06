@@ -166,6 +166,23 @@ uint16_t adc2_read_voltage() {
   ESP_LOGD(TAG, "Raw: %d / Voltage: %dmV", adc2_reading, voltage);
   return voltage;
 }
+
+// NCP18XH103F03RB: https://item.szlcsc.com/14214.html
+#define SERIES_RESISTOR 10000  // Series resistance value (10k?)
+#define B_COEFFICIENT   3950   // B value, set according to the NTC specification
+#define ROOM_TEMP       298.15 // 25°C absolute temperature (K)
+#define ROOM_TEMP_RESISTANCE 10000 // Resistance of NTC at 25°C (10k?)
+
+float getTempForNTC(int pin)
+{
+  float voltage    = analogReadMilliVolts(pin) / 1000.0;
+  float resistance = SERIES_RESISTOR * ((3.3 / voltage) - 1); // Calculate the resistance of NTC
+
+  // Calculate temperature using the Steinhart-Hart equation
+  float temperature = (1.0 / (log(resistance / ROOM_TEMP_RESISTANCE) / B_COEFFICIENT + 1.0 / ROOM_TEMP)) - 273.15;
+
+  return temperature;
+}
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
 #else

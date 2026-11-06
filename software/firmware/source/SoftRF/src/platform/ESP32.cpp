@@ -3368,6 +3368,12 @@ static void ESP32_post_init()
 #endif /* EXCLUDE_VOICE_MESSAGE */
 
   if (esp32_board == ESP32_TTGO_T_BEAM_1W) {
+
+    Serial.println();
+    Serial.print("Radio temperature: ");
+    Serial.print(getTempForNTC(SOC_GPIO_PIN_1W_TEMP));
+    Serial.println(" °C");
+
     if (settings->txpower != RF_TX_POWER_OFF) {
       /* turn on radio cooling fan */
       digitalWrite(SOC_GPIO_PIN_1W_FAN, HIGH);
