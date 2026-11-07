@@ -2634,6 +2634,10 @@ static void ESP32_setup()
     digitalWrite(SOC_GPIO_PIN_1W_PWR_EN, HIGH);
     pinMode(SOC_GPIO_PIN_1W_PWR_EN, OUTPUT);
 
+    /* turn off radio cooling fan */
+    digitalWrite(SOC_GPIO_PIN_1W_FAN, LOW);
+    pinMode(SOC_GPIO_PIN_1W_FAN, OUTPUT);
+
     pinMode(SOC_GPIO_PIN_1W_BUTTON_2, INPUT);
 
     /* enforce discharge of C15 and C16 capacitors when battery is NC */
@@ -3368,17 +3372,10 @@ static void ESP32_post_init()
 #endif /* EXCLUDE_VOICE_MESSAGE */
 
   if (esp32_board == ESP32_TTGO_T_BEAM_1W) {
-
     Serial.println();
     Serial.print("Radio temperature: ");
     Serial.print(getTempForNTC(SOC_GPIO_PIN_1W_TEMP));
     Serial.println(" °C");
-
-    if (settings->txpower != RF_TX_POWER_OFF) {
-      /* turn on radio cooling fan */
-      digitalWrite(SOC_GPIO_PIN_1W_FAN, HIGH);
-      pinMode(SOC_GPIO_PIN_1W_FAN, OUTPUT);
-    }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3 */
 
@@ -3652,6 +3649,11 @@ static void ESP32_post_init()
   }
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 }
+
+#define NTC_UPDATE_INTERVAL 5000 /* ms */
+#define NTC_THRESHOLD       50   /* °C */
+
+static unsigned long NTC_Time_Marker = 0;
 
 static void ESP32_loop()
 {
@@ -3963,6 +3965,25 @@ static void ESP32_loop()
       SoC->GNSS_PPS_handler();
     }
     prev_PPS_state = PPS_state;
+  }
+
+  if (esp32_board == ESP32_TTGO_T_BEAM_1W &&
+      settings->txpower != RF_TX_POWER_OFF) {
+    if ((millis() - NTC_Time_Marker) > NTC_UPDATE_INTERVAL) {
+      if (getTempForNTC(SOC_GPIO_PIN_1W_TEMP) > NTC_THRESHOLD) {
+        if (digitalRead(SOC_GPIO_PIN_1W_FAN) == LOW) {
+          /* turn on radio cooling fan */
+          digitalWrite(SOC_GPIO_PIN_1W_FAN, HIGH);
+        };
+      } else {
+        if (digitalRead(SOC_GPIO_PIN_1W_FAN) == HIGH) {
+          /* turn off radio cooling fan */
+          digitalWrite(SOC_GPIO_PIN_1W_FAN, LOW);
+        };
+      }
+
+      NTC_Time_Marker = millis();
+    }
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3-S31 */
 
