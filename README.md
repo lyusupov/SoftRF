@@ -45,6 +45,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 * **Certified** (CE/FCC)
     * [**Badge Edition**](https://github.com/lyusupov/SoftRF/wiki/Badge-Edition)
     * [**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII)
+    * [**Prime Mark IV**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIV) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [**Card  Mark III**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition-MkIII)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [**Solaris Edition**](https://github.com/lyusupov/SoftRF/wiki/Solaris-Edition)
     * [**Pocket Edition**](https://github.com/lyusupov/SoftRF/wiki/Pocket-Edition)
@@ -72,6 +73,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
     * [**Octave Concept**](https://github.com/lyusupov/SoftRF/wiki/Octave-Concept)
     * [**Duo Concept**](https://github.com/lyusupov/SoftRF/wiki/Eco-Edition#duo-concept)
 * has **flight recorder**
+    * [**Prime Mark IV**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIV) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
     * [**Flight Recorder**](https://github.com/lyusupov/SoftRF/wiki/Flight-Recorder)
 * **Weatherproof**

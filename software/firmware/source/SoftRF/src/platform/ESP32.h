@@ -421,9 +421,9 @@ struct rst_info {
 #define FMICRO_ID               0xA1
 #define FMICRO_FM25Q16          0x4015
 
-#define TBD_ID                  0x46
-#define TBD_25Q32               0x4016
-#define TBD_25Q128              0x4018
+/* Wuhan Xinxin Semiconductor Manufacturing Co., Ltd. */
+#define XMC_ID                  0x46
+#define XMC_XM25UH128D          0x4018
 
 #define MakeFlashId(v,d)        ((v << 16) | d)
 
