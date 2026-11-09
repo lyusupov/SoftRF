@@ -2270,6 +2270,16 @@ static void nRF52_post_init()
   Serial.println(rev);
 #endif
 
+#if 0
+  Serial.println();
+  Serial.print  (F("Bootloader version: "));
+  Serial.print(bootloaderVersion>>16);
+  Serial.print(".");
+  Serial.print((bootloaderVersion>>8) & 0xFF);
+  Serial.print(".");
+  Serial.println(bootloaderVersion    & 0xFF);
+#endif
+
   if (nRF52_board == NRF52_LILYGO_TECHO_REV_0 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_1 ||
       nRF52_board == NRF52_LILYGO_TECHO_REV_2 ||
