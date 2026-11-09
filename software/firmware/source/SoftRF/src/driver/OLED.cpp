@@ -1068,10 +1068,11 @@ void OLED_info1()
         // ndx = ndx < 0 ? 0 : ndx;
         int ndx = 0;
         u8x8->clear();
-        u8x8->drawString  (4, 4, "VERSION");
-        u8x8->draw2x2Glyph(5, 6, toupper(buf[ndx++]));
-        u8x8->draw2x2Glyph(7, 6, toupper(buf[ndx++]));
-        u8x8->draw2x2Glyph(9, 6, toupper(buf[ndx]));
+        u8x8->drawString  (  4, 4, "VERSION");
+        u8x8->draw2x2Glyph(  4, 6, toupper(buf[ndx++]));
+        u8x8->draw2x2Glyph(  6, 6, toupper(buf[ndx++]));
+        u8x8->draw2x2Glyph(  8, 6, toupper(buf[ndx++]));
+        u8x8->draw2x2Glyph( 10, 6, toupper(buf[ndx]));
 
         delay(2000);
 

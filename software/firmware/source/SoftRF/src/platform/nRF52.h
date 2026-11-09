@@ -333,7 +333,7 @@ struct rst_info {
 
 #define USE_EPAPER                 //  +    kb
 #define EPD_ASPECT_RATIO_1C1
-//#define EPD_ASPECT_RATIO_2C1
+#define EPD_ASPECT_RATIO_2C1
 #define USE_EPD_TASK
 #define USE_TIME_SLOTS
 
@@ -385,7 +385,7 @@ struct rst_info {
 #endif /* ARDUINO_ARCH_ZEPHYR */
 #endif /* ARDUINO_ARCH_MBED */
 
-//#define EXCLUDE_BHI260           //  -117 kb
+#define EXCLUDE_BHI260             //  -117 kb
 #define USE_BHI260_RAM_FW
 
 #define EXCLUDE_WIP

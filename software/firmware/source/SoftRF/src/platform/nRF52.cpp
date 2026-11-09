@@ -484,6 +484,10 @@ static void nRF52_msc_flush_cb (void)
 #define WAV_FILE_PREFIX       "/Audio/"
 #define WAV_FILE_SUFFIX       ".wav"
 
+#define VOICE1_SUBDIR         "voice1/"
+#define VOICE2_SUBDIR         "voice2/"
+#define VOICE3_SUBDIR         "voice3/"
+
 #define I2S_DATA_BLOCK_WORDS  8192
 
 /* these are data structures to process wav file */
@@ -1045,8 +1049,7 @@ static void nRF52_setup()
       hw_info.model      = SOFTRF_MODEL_SOLARIS;
       nRF5x_Device_Model = "Solaris Edition";
 
-      if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
-          reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
         NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
         pinMode(SOC_GPIO_PIN_M6_BUTTON, INPUT_PULLUP_SENSE);
@@ -1062,8 +1065,7 @@ static void nRF52_setup()
       hw_info.model      = SOFTRF_MODEL_STYLUS;
       nRF5x_Device_Model = "Stylus Edition";
 
-      if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
-          reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
         NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
         pinMode(SOC_GPIO_PIN_TIP_PAD, INPUT_PULLUP_SENSE); /* TBD */
@@ -1081,8 +1083,7 @@ static void nRF52_setup()
       hw_info.model      = SOFTRF_MODEL_CARD_MK2;
       nRF5x_Device_Model = "Card Edition Mk2";
 
-      if (reset_reason & POWER_RESETREAS_VBUS_Msk ||
-          reset_reason & POWER_RESETREAS_RESETPIN_Msk) {
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
         NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
         pinMode(SOC_GPIO_PIN_TEC_BUTTON, INPUT_PULLUP_SENSE); /* TBD */
@@ -1993,10 +1994,13 @@ static void nRF52_setup()
           bhi_accel.enable(sample_rate, report_latency_ms);
           // Enable gyroscope
           // bhi_gyro.enable(sample_rate, report_latency_ms);
-
+#else
+        } else if (Wire.beginTransmission(BHI260AP_ADDRESS_L),
+                   Wire.endTransmission() == 0) {
+#endif /* EXCLUDE_BHI260 */
           hw_info.imu = IMU_BHI260AP;
           IMU_Time_Marker = millis();
-#endif /* EXCLUDE_BHI260 */
+
         } else {
           bool ad0 = (ICM20948_ADDRESS == 0x69) ? true : false;
 
@@ -2373,7 +2377,6 @@ static void nRF52_post_init()
     Serial.println();
     Serial.flush();
 
-#if 0
     if (nRF52_board == NRF52_LILYGO_TECHO_CARD) {
 #if defined(USE_EXT_I2S_DAC)
       char filename[MAX_FILENAME_LEN];
@@ -2385,7 +2388,6 @@ static void nRF52_post_init()
       }
 #endif /* USE_EXT_I2S_DAC */
     }
-#endif
 
 #if defined(ENABLE_NFC) && defined(EXCLUDE_BLUETOOTH)
     if ((NRF_UICR->NFCPINS & UICR_NFCPINS_PROTECT_Msk) == (UICR_NFCPINS_PROTECT_NFC << UICR_NFCPINS_PROTECT_Pos)) {
@@ -3751,7 +3753,11 @@ static void nRF52_EEPROM_extension(int cmd)
       ui->adb          = DB_OGN;
       ui->idpref       = ID_TYPE;
       ui->vmode        = VIEW_MODE_STATUS;
-      ui->voice        = VOICE_OFF;
+      if (nRF52_board == NRF52_LILYGO_TECHO_CARD) {
+        ui->voice      = VOICE_1;
+      } else {
+        ui->voice      = VOICE_OFF;
+      }
       ui->aghost       = ANTI_GHOSTING_OFF;
       ui->filter       = TRAFFIC_FILTER_OFF;
       ui->power_save   = 0;
@@ -5180,7 +5186,41 @@ static void nRF52_Button_fini()
 
 static void nRF52_TTS(char *message)
 {
+#if defined(USE_EXT_I2S_DAC)
+  char filename[MAX_FILENAME_LEN];
 
+  if (nRF52_board == NRF52_LILYGO_TECHO_CARD && ui->voice != VOICE_OFF) {
+
+    if (!FATFS_is_mounted)
+      return;
+
+    char *word = strtok (message, " ");
+
+    while (word != NULL)
+    {
+        strcpy(filename, WAV_FILE_PREFIX);
+        strcat(filename,  ui->voice == VOICE_1 ? VOICE1_SUBDIR :
+                         (ui->voice == VOICE_2 ? VOICE2_SUBDIR :
+                         (ui->voice == VOICE_3 ? VOICE3_SUBDIR :
+                          "" )));
+        strcat(filename, word);
+        strcat(filename, WAV_FILE_SUFFIX);
+        if (fatfs.exists(filename)) {
+          play_file(filename);
+
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+          // Reload the watchdog
+          if (nrf_wdt_started(NRF_WDT)) {
+            Watchdog.reset();
+          }
+#endif /* ARDUINO_ARCH_MBED */
+        }
+        word = strtok (NULL, " ");
+
+        yield();
+    }
+  }
+#endif /* USE_EXT_I2S_DAC */
 }
 
 #if defined(USE_WEBUSB_SERIAL) && !defined(USE_WEBUSB_SETTINGS)

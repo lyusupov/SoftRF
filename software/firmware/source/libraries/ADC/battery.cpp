@@ -176,7 +176,8 @@ uint16_t adc2_read_voltage() {
 float getTempForNTC(int pin)
 {
   float voltage    = analogReadMilliVolts(pin) / 1000.0;
-  float resistance = SERIES_RESISTOR * ((3.3 / voltage) - 1); // Calculate the resistance of NTC
+  // Calculate the resistance of NTC
+  float resistance = SERIES_RESISTOR * ((3.3 / voltage) - 1);
 
   // Calculate temperature using the Steinhart-Hart equation
   float temperature = (1.0 / (log(resistance / ROOM_TEMP_RESISTANCE) / B_COEFFICIENT + 1.0 / ROOM_TEMP)) - 273.15;
