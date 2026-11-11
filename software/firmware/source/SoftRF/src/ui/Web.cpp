@@ -987,6 +987,105 @@ PSTR("<html>\
   return Input_temp;
 }
 
+#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR20XX) && !defined(EXCLUDE_ES1090)
+extern mode_s_t rl_mode_s_state;
+extern uint32_t bad_crc_counter;
+
+char *ModeS_content() {
+  size_t size = 8192;
+  char *offset;
+  size_t len = 0;
+
+  char *ModeS_temp = (char *) malloc(size);
+  if (ModeS_temp == NULL) {
+    return ModeS_temp;
+  }
+
+  offset = ModeS_temp;
+
+  int acfts_in_sight = 0;
+  struct mode_s_aircraft *a = rl_mode_s_state.aircrafts;
+  time_t now = time(NULL);
+
+  while (a) {
+    acfts_in_sight++;
+    a = a->next;
+  }
+  a = rl_mode_s_state.aircrafts;
+
+  snprintf_P ( offset, size,
+PSTR("<html>\
+<head>\
+<meta http-equiv='refresh' content='5; url=/modes'>\
+<meta name='viewport' content='width=device-width, initial-scale=1'>\
+<title>Mode-S Status</title>\
+</head>\
+<body>\
+<h1 align=center>Mode-S Status</h1>\
+<table width=100%%>\
+<tr><td align=left><table><tr><th align=left>Active&nbsp;&nbsp;</th><td align=right>%d</td></tr></table></td>\
+<td align=center><table><tr><th align=left>Frames&nbsp;&nbsp;</th><td align=right>%d</td></tr></table></td>\
+<td align=right><table><tr><th align=left>Errors&nbsp;&nbsp;</th><td align=right>%d</td></tr></table></td></tr>\
+</table>\
+<hr>\
+<table width=100%%>\
+<tr><th align=center>ICAO</th>\
+<th align=center>Callsign</th><th align=center>Alt</th>\
+<th align=center>Spd</th><th align=center>Lat</th>\
+<th align=center>Lon</th><th align=center>Trk</th>\
+<th align=center>Msgs</th><th align=center>Seen</th>\
+<th align=center>RSSI</th></tr>\
+<tr><th></th><th></th><th align=center>ft</th><th align=center>kts</th>\
+<th></th><th></th><th>deg</th><th></th><th>sec</th><th>dBm</th></tr>\
+<tr><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td>\
+<td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr>"),
+  acfts_in_sight, rx_packets_counter, bad_crc_counter
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  if (acfts_in_sight == 0) {
+    snprintf_P ( offset, size,
+PSTR("<tr><td></td><td></td><td></td><td></td>\
+<td align=center>NO DATA</td>\
+<td></td><td></td><td></td><td></td><td></td></tr>"));
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  } else {
+    while (a) {
+      snprintf_P ( offset, size,
+PSTR("<tr><td align=left>%06X</td><td align=right>%-8s</td>\
+<td align=right>%-9d</td><td align=right>%-7d</td><td align=right>%-6.02f</td>\
+<td align=right>%-6.02f</td><td align=right>%-3d</td><td align=right>%d</td>\
+<td align=right>%d</td><td align=right>%-3d</td>\
+     </tr>"),
+      a->addr, a->flight, a->altitude, a->speed, a->lat, a->lon, a->track,
+      a->messages, (int)(now - a->seen), a->rssi
+      );
+
+      len = strlen(offset);
+      offset += len;
+      size -= len;
+
+      a = a->next;
+    }
+  }
+
+  snprintf_P ( offset, size,
+PSTR("<tr><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td>\
+<td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr>\
+</table>\
+</body>\
+</html>")
+  );
+
+  return ModeS_temp;
+}
+#endif /* USE_RADIOLIB */
+
 #if defined(EXCLUDE_WEBUI) || \
    (defined(EXCLUDE_WIFI)  && defined(EXCLUDE_ETHERNET))
 void Web_setup()    {}
@@ -1356,6 +1455,22 @@ void handleNotFound() {
   }
 }
 
+#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR20XX) && !defined(EXCLUDE_ES1090)
+void handleModeS() {
+  char *mode_s = ModeS_content();
+
+  if (mode_s) {
+    SoC->swSer_enableRx(false);
+    server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+    server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+    server.sendHeader(String(F("Expires")), String(F("-1")));
+    server.send ( 200, "text/html", mode_s );
+    SoC->swSer_enableRx(true);
+    free(mode_s);
+  }
+}
+#endif /* USE_RADIOLIB */
+
 void Web_setup()
 {
   server.on ( "/", handleRoot );
@@ -1516,6 +1631,10 @@ $('form').submit(function(e){\
 #if defined(ENABLE_RECORDER)
   server.on("/flights", HTTP_GET, Handle_Flight_Download);
 #endif /* ENABLE_RECORDER */
+
+#if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR20XX) && !defined(EXCLUDE_ES1090)
+  server.on("/modes", HTTP_GET, handleModeS);
+#endif /* USE_RADIOLIB */
 
   server.begin();
   Serial.println (F("HTTP server has started at port: 80"));

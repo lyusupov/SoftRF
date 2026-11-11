@@ -1758,6 +1758,7 @@ static uint64_t lr20xx_eui_be = 0xdeadbeefdeadbeef;
 
 #if !defined(EXCLUDE_ES1090)
 mode_s_t rl_mode_s_state;
+uint32_t bad_crc_counter = 0;
 #endif /* EXCLUDE_ES1090 */
 
 /* LilyGO T-LR2021 V0.2 */
@@ -2866,6 +2867,8 @@ static bool lr20xx_receive()
                 interactiveReceiveData(&rl_mode_s_state, &mm);
               }
             }
+          } else {
+            bad_crc_counter++;
           }
           break;
         }
