@@ -987,6 +987,84 @@ PSTR("<html>\
   return Input_temp;
 }
 
+char *Traffic_content() {
+  size_t size = 8192;
+  char *offset;
+  size_t len = 0;
+
+  char *Traffic_temp = (char *) malloc(size);
+  if (Traffic_temp == NULL) {
+    return Traffic_temp;
+  }
+
+  offset = Traffic_temp;
+
+  snprintf_P ( offset, size,
+PSTR("<html>\
+<head>\
+<meta http-equiv='refresh' content='5; url=/traffic'>\
+<meta name='viewport' content='width=device-width, initial-scale=1'>\
+<title>SoftRF Traffic</title>\
+</head>\
+<body>\
+<h1 align=center>SoftRF Traffic</h1>\
+<hr>\
+<table width=100%%>\
+<tr><th align=center>ID</th>\
+<th align=center>Callsign</th><th align=center>Alt</th>\
+<th align=center>Spd</th><th align=center>Lat</th>\
+<th align=center>Lon</th><th align=center>Trk</th>\
+<th align=center>Seen</th><th align=center>RSSI</th></tr>\
+<tr><th></th><th></th><th align=center>m</th><th align=center>kts</th>\
+<th></th><th></th><th>deg</th><th>sec</th><th>dBm</th></tr>\
+<tr><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td>\
+<td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr>")
+  );
+
+  len = strlen(offset);
+  offset += len;
+  size -= len;
+
+  if (Traffic_Count() == 0) {
+    snprintf_P ( offset, size,
+PSTR("<tr><td></td><td></td><td></td><td></td>\
+<td align=center>NO DATA</td>\
+<td></td><td></td><td></td><td></td></tr>"));
+    len = strlen(offset);
+    offset += len;
+    size -= len;
+  } else {
+    for (int i=0; i < MAX_TRACKING_OBJECTS; i++) {
+      if (Container[i].addr) {
+        snprintf_P ( offset, size,
+PSTR("<tr><td align=left>%06X</td><td align=right>%-8s</td>\
+<td align=right>%-9d</td><td align=right>%-7d</td><td align=right>%-6.02f</td>\
+<td align=right>%-6.02f</td><td align=right>%-3d</td><td align=right>%d</td>\
+<td align=right>%-3d</td></tr>"),
+        Container[i].addr, Container[i].callsign, (int) Container[i].altitude,
+        (int) Container[i].speed, Container[i].latitude, Container[i].longitude,
+        (int) Container[i].course, now() - Container[i].timestamp,
+        Container[i].rssi
+        );
+
+        len = strlen(offset);
+        offset += len;
+        size -= len;
+      }
+    }
+  }
+
+  snprintf_P ( offset, size,
+PSTR("<tr><td><hr></td><td><hr></td><td><hr></td><td><hr></td>\
+<td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td></tr>\
+</table>\
+</body>\
+</html>")
+  );
+
+  return Traffic_temp;
+}
+
 #if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR20XX) && !defined(EXCLUDE_ES1090)
 extern mode_s_t rl_mode_s_state;
 extern uint32_t bad_crc_counter;
@@ -1455,6 +1533,20 @@ void handleNotFound() {
   }
 }
 
+void handleTraffic() {
+  char *traffic = Traffic_content();
+
+  if (traffic) {
+    SoC->swSer_enableRx(false);
+    server.sendHeader(String(F("Cache-Control")), String(F("no-cache, no-store, must-revalidate")));
+    server.sendHeader(String(F("Pragma")), String(F("no-cache")));
+    server.sendHeader(String(F("Expires")), String(F("-1")));
+    server.send ( 200, "text/html", traffic );
+    SoC->swSer_enableRx(true);
+    free(traffic);
+  }
+}
+
 #if defined(USE_RADIOLIB) && !defined(EXCLUDE_LR20XX) && !defined(EXCLUDE_ES1090)
 void handleModeS() {
   char *mode_s = ModeS_content();
@@ -1488,6 +1580,8 @@ void Web_setup()
   server.on ( "/inline", []() {
     server.send ( 200, "text/plain", "this works as well" );
   } );
+
+  server.on("/traffic", HTTP_GET, handleTraffic);
 
   server.onNotFound ( handleNotFound );
 
