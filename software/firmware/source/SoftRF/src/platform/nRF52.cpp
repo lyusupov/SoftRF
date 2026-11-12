@@ -250,9 +250,11 @@ enum {
   ZD25Q32D_INDEX,
 
   GD25Q64C_INDEX,
+
+  P25Q32H_INDEX,
+
 #if !defined(EXCLUDE_WIP)
   P25Q16H_INDEX,
-  P25Q32H_INDEX,
 #endif /* EXCLUDE_WIP */
   EXTERNAL_FLASH_DEVICE_COUNT
 };
@@ -270,11 +272,13 @@ static SPIFlash_Device_t possible_devices[] = {
 
   // Seeed T1000-E, X1
   [GD25Q64C_INDEX]   = GD25Q64C,
+
+  // Radioddity Nodara
+  [P25Q32H_INDEX]    = P25Q32H,
+
 #if !defined(EXCLUDE_WIP)
   // Seeed Wio L1
   [P25Q16H_INDEX]    = P25Q16H,
-  // Radioddity Nodara
-  [P25Q32H_INDEX]    = P25Q32H,
 #endif /* EXCLUDE_WIP */
 };
 
@@ -881,10 +885,10 @@ static void nRF52_setup()
                 nRF52_bl_check("T-Impulse-Plus") ? NRF52_LILYGO_TIMPULSE_PLUS :
                 nRF52_bl_check("T-Echo-Card")    ? NRF52_LILYGO_TECHO_CARD    :
                 nRF52_bl_check("MeshTracker-X1") ? NRF52_SEEED_X1             :
+                nRF52_bl_check("NODARA")         ? NRF52_RADIODDITY_NODARA    :
 #if !defined(EXCLUDE_WIP)
                 nRF52_bl_check("T2000")          ? NRF52_SEEED_T2000          :
                 nRF52_bl_check("TRACKER L1")     ? NRF52_SEEED_WIO_L1         :
-                nRF52_bl_check("NODARA")         ? NRF52_RADIODDITY_NODARA    :
 #endif /* EXCLUDE_WIP */
                 nRF52_board;
 
@@ -974,21 +978,6 @@ static void nRF52_setup()
         NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
 #if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
         pinMode(SOC_GPIO_PIN_T2000_BUTTON, INPUT_PULLUP_SENSE);
-#endif /* ARDUINO_ARCH_MBED */
-        nRF52_system_off();
-      }
-
-      break;
-
-    case NRF52_RADIODDITY_NODARA:
-      hw_info.model      = SOFTRF_MODEL_NODARA;
-      nRF5x_Device_Model = "Nodara Edition";
-      nRF52_display      = EP_GDEM0213B74;
-
-      if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
-        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
-#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
-        pinMode(SOC_GPIO_PIN_ND_BUTTON5, INPUT_PULLUP_SENSE);
 #endif /* ARDUINO_ARCH_MBED */
         nRF52_system_off();
       }
@@ -1094,6 +1083,21 @@ static void nRF52_setup()
       digitalWrite(SOC_GPIO_PIN_TEC_3V3_EN, HIGH);
       pinMode(SOC_GPIO_PIN_TEC_3V3_EN, OUTPUT);
       delay(30);
+
+      break;
+
+    case NRF52_RADIODDITY_NODARA:
+      hw_info.model      = SOFTRF_MODEL_NODARA;
+      nRF5x_Device_Model = "Nodara Edition";
+      nRF52_display      = EP_GDEM0213B74;
+
+      if (reset_reason & POWER_RESETREAS_VBUS_Msk) {
+        NRF_POWER->GPREGRET = DFU_MAGIC_SKIP;
+#if !defined(ARDUINO_ARCH_MBED) && !defined(ARDUINO_ARCH_ZEPHYR)
+        pinMode(SOC_GPIO_PIN_ND_BUTTON5, INPUT_PULLUP_SENSE);
+#endif /* ARDUINO_ARCH_MBED */
+        nRF52_system_off();
+      }
 
       break;
 
@@ -1359,9 +1363,6 @@ static void nRF52_setup()
     case NRF52_HELTEC_T1:
       /* TBD */
       break;
-    case NRF52_RADIODDITY_NODARA:
-      /* TBD */
-      break;
 #endif /* EXCLUDE_WIP */
     case NRF52_SEEED_T1000E:
     case NRF52_SEEED_X1:
@@ -1375,6 +1376,9 @@ static void nRF52_setup()
 #if defined(EXCLUDE_WIFI)
       Serial1.begin(SERIAL_OUT_BR, SERIAL_OUT_BITS);
 #endif /* EXCLUDE_WIFI */
+      break;
+    case NRF52_RADIODDITY_NODARA:
+      /* TBD */
       break;
     case NRF52_HELTEC_T114:
     case NRF52_ELECROW_TN_M1:
@@ -1425,17 +1429,6 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_M8_ADC_EN, OUTPUT);
       digitalWrite(SOC_GPIO_PIN_EPD_M8_EN, HIGH);
       pinMode(SOC_GPIO_PIN_EPD_M8_EN, OUTPUT);
-      /* TBD */
-      break;
-    case NRF52_RADIODDITY_NODARA:
-      digitalWrite(SOC_GPIO_PIN_ND_ADC_EN, HIGH);
-      pinMode(SOC_GPIO_PIN_ND_ADC_EN, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_EPD_ND_PWR, LOW);
-      pinMode(SOC_GPIO_PIN_EPD_ND_PWR, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_GNSS_ND_PWR, HIGH);
-      pinMode(SOC_GPIO_PIN_GNSS_ND_PWR, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_ND_PWR, HIGH); /* sub-1GHz */
-      pinMode(SOC_GPIO_PIN_ND_PWR, OUTPUT);
       /* TBD */
       break;
 #endif /* EXCLUDE_WIP */
@@ -1508,6 +1501,18 @@ static void nRF52_setup()
     case NRF52_SEEED_X1:
       digitalWrite(SOC_GPIO_PIN_X1_VBAT_EN, HIGH);
       pinMode(SOC_GPIO_PIN_X1_VBAT_EN, OUTPUT);
+      /* TBD */
+      break;
+
+    case NRF52_RADIODDITY_NODARA:
+      digitalWrite(SOC_GPIO_PIN_ND_ADC_EN, HIGH);
+      pinMode(SOC_GPIO_PIN_ND_ADC_EN, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_EPD_ND_PWR, LOW);
+      pinMode(SOC_GPIO_PIN_EPD_ND_PWR, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_ND_PWR, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_ND_PWR, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_ND_PWR, HIGH); /* sub-1GHz */
+      pinMode(SOC_GPIO_PIN_ND_PWR, OUTPUT);
       /* TBD */
       break;
 
@@ -1659,27 +1664,6 @@ static void nRF52_setup()
 
       hw_info.revision = 3; /* Unknown */
       hw_info.audio    = AUDIO_PWM;
-      break;
-
-    case NRF52_RADIODDITY_NODARA:
-      /* Wake up Quectel L76K GNSS */
-      digitalWrite(SOC_GPIO_PIN_GNSS_ND_RST, HIGH);
-      pinMode(SOC_GPIO_PIN_GNSS_ND_RST, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
-      pinMode(SOC_GPIO_PIN_GNSS_ND_WKE, OUTPUT);
-
-      pinMode(SOC_GPIO_LED_ND_GREEN, OUTPUT);
-      pinMode(SOC_GPIO_LED_ND_BLUE,  OUTPUT);
-
-      ledOn (SOC_GPIO_LED_ND_GREEN);
-      ledOff(SOC_GPIO_LED_ND_BLUE);
-
-      lmic_pins.rst = SOC_GPIO_PIN_ND_RST;
-#if defined(USE_RADIOLIB)
-      lmic_pins.dio[0] = SOC_GPIO_PIN_ND_DIO1;
-#endif /* USE_RADIOLIB */
-
-      hw_info.revision = 3; /* Unknown */
       break;
 #endif /* EXCLUDE_WIP */
 
@@ -1895,6 +1879,27 @@ static void nRF52_setup()
 
       hw_info.revision = 3; /* Unknown */
       hw_info.audio    = AUDIO_PWM;
+      break;
+
+    case NRF52_RADIODDITY_NODARA:
+      /* Wake up Quectel L76K GNSS */
+      digitalWrite(SOC_GPIO_PIN_GNSS_ND_RST, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_ND_RST, OUTPUT);
+      digitalWrite(SOC_GPIO_PIN_GNSS_WKE, HIGH);
+      pinMode(SOC_GPIO_PIN_GNSS_ND_WKE, OUTPUT);
+
+      pinMode(SOC_GPIO_LED_ND_GREEN, OUTPUT);
+      pinMode(SOC_GPIO_LED_ND_BLUE,  OUTPUT);
+
+      ledOn (SOC_GPIO_LED_ND_GREEN);
+      ledOff(SOC_GPIO_LED_ND_BLUE);
+
+      lmic_pins.rst = SOC_GPIO_PIN_ND_RST;
+#if defined(USE_RADIOLIB)
+      lmic_pins.dio[0] = SOC_GPIO_PIN_ND_DIO1;
+#endif /* USE_RADIOLIB */
+
+      hw_info.revision = 3; /* Unknown */
       break;
 
     case NRF52_NORDIC_PCA10059:
@@ -3089,25 +3094,6 @@ static void nRF52_fini(int reason)
 
       pinMode(SOC_GPIO_PIN_T2000_VBAT_EN,   INPUT);
       break;
-
-    case NRF52_RADIODDITY_NODARA:
-      digitalWrite(SOC_GPIO_PIN_GNSS_ND_WKE, LOW);
-
-      digitalWrite(SOC_GPIO_LED_ND_GREEN, 1-LED_STATE_ON);
-      digitalWrite(SOC_GPIO_LED_ND_BLUE,  1-LED_STATE_ON);
-
-      pinMode(SOC_GPIO_LED_ND_GREEN,    INPUT);
-      pinMode(SOC_GPIO_LED_ND_BLUE,     INPUT);
-
-      pinMode(SOC_GPIO_PIN_SFL_ND_HOLD, INPUT);
-      pinMode(SOC_GPIO_PIN_SFL_ND_WP,   INPUT);
-      pinMode(SOC_GPIO_PIN_SFL_ND_SS,   INPUT);
-
-      pinMode(SOC_GPIO_PIN_ND_ADC_EN,   INPUT);
-      pinMode(SOC_GPIO_PIN_EPD_ND_PWR,  INPUT);
-      pinMode(SOC_GPIO_PIN_GNSS_ND_PWR, INPUT);
-      pinMode(SOC_GPIO_PIN_ND_PWR,      INPUT); /* sub-1GHz */
-      break;
 #endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
@@ -3272,6 +3258,25 @@ static void nRF52_fini(int reason)
       pinMode(SOC_GPIO_PIN_X1_RTC_EN,       INPUT);
       break;
 
+    case NRF52_RADIODDITY_NODARA:
+      digitalWrite(SOC_GPIO_PIN_GNSS_ND_WKE, LOW);
+
+      digitalWrite(SOC_GPIO_LED_ND_GREEN, 1-LED_STATE_ON);
+      digitalWrite(SOC_GPIO_LED_ND_BLUE,  1-LED_STATE_ON);
+
+      pinMode(SOC_GPIO_LED_ND_GREEN,    INPUT);
+      pinMode(SOC_GPIO_LED_ND_BLUE,     INPUT);
+
+      pinMode(SOC_GPIO_PIN_SFL_ND_HOLD, INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_ND_WP,   INPUT);
+      pinMode(SOC_GPIO_PIN_SFL_ND_SS,   INPUT);
+
+      pinMode(SOC_GPIO_PIN_ND_ADC_EN,   INPUT);
+      pinMode(SOC_GPIO_PIN_EPD_ND_PWR,  INPUT);
+      pinMode(SOC_GPIO_PIN_GNSS_ND_PWR, INPUT);
+      pinMode(SOC_GPIO_PIN_ND_PWR,      INPUT); /* sub-1GHz */
+      break;
+
     case NRF52_NORDIC_PCA10059:
     default:
 //      ledOff(SOC_GPIO_LED_PCA10059_GREEN);
@@ -3396,10 +3401,6 @@ static void nRF52_fini(int reason)
     case NRF52_HELTEC_T1:
       mode_button_pin = SOC_GPIO_PIN_T1_BUTTON1;
       break;
-
-    case NRF52_RADIODDITY_NODARA:
-      mode_button_pin = SOC_GPIO_PIN_ND_BUTTON5;
-      break;
 #endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
@@ -3437,6 +3438,10 @@ static void nRF52_fini(int reason)
 
     case NRF52_NORDIC_PCA10059:
       mode_button_pin = SOC_GPIO_PIN_PCA10059_BUTTON;
+      break;
+
+    case NRF52_RADIODDITY_NODARA:
+      mode_button_pin = SOC_GPIO_PIN_ND_BUTTON5;
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:
@@ -4337,7 +4342,6 @@ static byte nRF52_Display_setup()
     switch (nRF52_display)
     {
 #if defined(EPD_ASPECT_RATIO_2C1)
-#if !defined(EXCLUDE_WIP)
     case EP_GDEM0213B74:
       display = new GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT> (
                       GxEPD2_213_B74(
@@ -4356,7 +4360,6 @@ static byte nRF52_Display_setup()
                         SOC_GPIO_PIN_EPD_BUSY));
       break;
 #endif
-#endif /* EXCLUDE_WIP */
 #endif /* EPD_ASPECT_RATIO_2C1 */
 #if defined(EPD_ASPECT_RATIO_1C1)
     case EP_GDEP015OC1:
@@ -5058,10 +5061,6 @@ static void nRF52_Button_setup()
       mode_button_pin = SOC_GPIO_PIN_T1_BUTTON1;
       // up_button_pin   = SOC_GPIO_PIN_T1_BUTTON2;
       break;
-
-    case NRF52_RADIODDITY_NODARA:
-      mode_button_pin = SOC_GPIO_PIN_ND_BUTTON5;
-      break;
 #endif /* EXCLUDE_WIP */
 
     case NRF52_SEEED_T1000E:
@@ -5100,6 +5099,10 @@ static void nRF52_Button_setup()
 
     case NRF52_NORDIC_PCA10059:
       mode_button_pin = SOC_GPIO_PIN_PCA10059_BUTTON;
+      break;
+
+    case NRF52_RADIODDITY_NODARA:
+      mode_button_pin = SOC_GPIO_PIN_ND_BUTTON5;
       break;
 
     case NRF52_LILYGO_TECHO_REV_0:
