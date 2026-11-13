@@ -99,7 +99,7 @@ extern "C" time_t now_C();
 #endif /* CONFIG_IDF_TARGET_ESP32P4 */
 
 #define USE_BYTE_MAG
-#define MODE_S_INTERACTIVE_TTL 10 /* TTL before being removed */
+#define MODE_S_INTERACTIVE_TTL 30 /* TTL before being removed */
 
 typedef unsigned long ms_time_t;
 #endif /* ! HACKRF_ONE && ! ARDUINO */

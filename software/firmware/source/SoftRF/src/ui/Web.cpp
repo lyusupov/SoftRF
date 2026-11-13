@@ -1013,8 +1013,8 @@ PSTR("<html>\
 <tr><th align=center>ID</th>\
 <th align=center>Callsign</th><th align=center>Alt</th>\
 <th align=center>Spd</th><th align=center>Lat</th>\
-<th align=center>Lon</th><th align=center>Trk</th>\
-<th align=center>Seen</th><th align=center>RSSI</th></tr>\
+<th align=center>Lon</th><th align=center>Hdg</th>\
+<th align=center>Age</th><th align=center>RSSI</th></tr>\
 <tr><th></th><th></th><th align=center>m</th><th align=center>kts</th>\
 <th></th><th></th><th>deg</th><th>sec</th><th>dBm</th></tr>\
 <tr><td><hr></td><td><hr></td><td><hr></td><td><hr></td><td><hr></td>\
@@ -1102,16 +1102,16 @@ PSTR("<html>\
 <h1 align=center>Mode-S Status</h1>\
 <table width=100%%>\
 <tr><td align=left><table><tr><th align=left>Active&nbsp;&nbsp;</th><td align=right>%d</td></tr></table></td>\
-<td align=center><table><tr><th align=left>Frames&nbsp;&nbsp;</th><td align=right>%d</td></tr></table></td>\
-<td align=right><table><tr><th align=left>Errors&nbsp;&nbsp;</th><td align=right>%d</td></tr></table></td></tr>\
+<td align=center><table><tr><th align=left>Frames decoded&nbsp;&nbsp;</th><td align=right>%d</td></tr></table></td>\
+<td align=right><table><tr><th align=left>CRC errors&nbsp;&nbsp;</th><td align=right>%d</td></tr></table></td></tr>\
 </table>\
 <hr>\
 <table width=100%%>\
 <tr><th align=center>ICAO</th>\
 <th align=center>Callsign</th><th align=center>Alt</th>\
 <th align=center>Spd</th><th align=center>Lat</th>\
-<th align=center>Lon</th><th align=center>Trk</th>\
-<th align=center>Msgs</th><th align=center>Seen</th>\
+<th align=center>Lon</th><th align=center>Hdg</th>\
+<th align=center>Msgs</th><th align=center>Age</th>\
 <th align=center>RSSI</th></tr>\
 <tr><th></th><th></th><th align=center>ft</th><th align=center>kts</th>\
 <th></th><th></th><th>deg</th><th></th><th>sec</th><th>dBm</th></tr>\
