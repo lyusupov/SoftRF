@@ -129,17 +129,11 @@ static nRF52_board_id nRF52_board = NRF52_LILYGO_TECHO_REV_2; /* default */
 static nRF52_display_id nRF52_display = EP_UNKNOWN;
 
 const char *nRF5x_Device_Manufacturer = SOFTRF_IDENT;
-const char *nRF5x_Device_Model = "Badge Edition";
-const uint16_t nRF52_Device_Version = SOFTRF_USB_FW_VERSION;
+const char *nRF5x_Device_Model        = "Badge Edition";
+const char *Hardware_Revision         = "Unknown";
+const uint16_t nRF52_Device_Version   = SOFTRF_USB_FW_VERSION;
 static uint16_t nRF52_USB_VID = 0x239A; /* Adafruit Industries */
 static uint16_t nRF52_USB_PID = 0x8029; /* Feather nRF52840 Express */
-
-const char *Hardware_Rev[] = {
-  [0] = "2020-8-6",
-  [1] = "2020-12-12",
-  [2] = "2021-3-26",
-  [3] = "Unknown"
-};
 
 const prototype_entry_t techo_prototype_boards[] = {
   { 0x684f99bd2d5c7fae, NRF52_LILYGO_TECHO_REV_0, EP_GDEP015OC1,  0 }, /* orange */
@@ -1543,8 +1537,9 @@ static void nRF52_setup()
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_0_RST;
 
-      hw_info.revision = 0;
-      hw_info.touch    = TOUCH_TTP223;
+      hw_info.revision  = 0;
+      Hardware_Revision = "2020-8-6";
+      hw_info.touch     = TOUCH_TTP223;
       break;
 
     case NRF52_LILYGO_TECHO_REV_1:
@@ -1562,8 +1557,9 @@ static void nRF52_setup()
 
       lmic_pins.rst = SOC_GPIO_PIN_TECHO_REV_1_RST;
 
-      hw_info.revision = 1;
-      hw_info.touch    = TOUCH_TTP223;
+      hw_info.revision  = 1;
+      Hardware_Revision = "2020-12-12";
+      hw_info.touch     = TOUCH_TTP223;
       break;
 
     case NRF52_LILYGO_TECHO_REV_2:
@@ -1587,8 +1583,9 @@ static void nRF52_setup()
       lmic_pins.dio[0] = SOC_GPIO_PIN_DIO1; /* reserved for DIO11 of HPD-16E */
 #endif /* USE_RADIOLIB */
 
-      hw_info.revision = 2;
-      hw_info.touch    = TOUCH_TTP223;
+      hw_info.revision  = 2;
+      Hardware_Revision = "2021-3-26";
+      hw_info.touch     = TOUCH_TTP223;
       break;
 
 #if !defined(EXCLUDE_WIP)
@@ -1607,7 +1604,7 @@ static void nRF52_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_L1_RST;
       lmic_pins.busy = SOC_GPIO_PIN_L1_BUSY;
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       break;
 
     case NRF52_SEEED_T2000:
@@ -1625,7 +1622,7 @@ static void nRF52_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_T2000_RST;
       lmic_pins.busy = SOC_GPIO_PIN_T2000_BUSY;
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       break;
 
     case NRF52_HELTEC_T1:
@@ -1643,7 +1640,7 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_T1_SENS_INT1, INPUT);
       pinMode(SOC_GPIO_PIN_T1_SENS_INT2, INPUT);
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       break;
 
     case NRF52_ELECROW_TN_M8:
@@ -1662,7 +1659,7 @@ static void nRF52_setup()
 
       pinMode(SOC_GPIO_PIN_M8_ANT_SW,   INPUT_PULLUP);
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       hw_info.audio    = AUDIO_PWM;
       break;
 #endif /* EXCLUDE_WIP */
@@ -1693,7 +1690,7 @@ static void nRF52_setup()
       lmic_pins.dio[0] = SOC_GPIO_PIN_T1000_DIO9; /* LR1110 */
 #endif /* USE_RADIOLIB */
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       hw_info.audio    = AUDIO_PWM;
       break;
 
@@ -1717,7 +1714,7 @@ static void nRF52_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_T114_RST;
       lmic_pins.busy = SOC_GPIO_PIN_T114_BUSY;
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       break;
 
     case NRF52_ELECROW_TN_M1:
@@ -1740,7 +1737,7 @@ static void nRF52_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_M1_RST;
       lmic_pins.busy = SOC_GPIO_PIN_M1_BUSY;
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       hw_info.audio    = AUDIO_PWM;
       break;
 
@@ -1770,7 +1767,7 @@ static void nRF52_setup()
       lmic_pins.dio[0] = SOC_GPIO_PIN_M3_DIO9; /* LR1110 */
 #endif /* USE_RADIOLIB */
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       hw_info.audio    = AUDIO_PWM;
       break;
 
@@ -1794,7 +1791,7 @@ static void nRF52_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_M6_RST;
       lmic_pins.busy = SOC_GPIO_PIN_M6_BUSY;
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       break;
 
     case NRF52_LILYGO_TIMPULSE_PLUS:
@@ -1812,7 +1809,7 @@ static void nRF52_setup()
       pinMode(SOC_GPIO_PIN_TIP_INT1, INPUT);
       pinMode(SOC_GPIO_PIN_TIP_INT2, INPUT);
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       hw_info.touch    = TOUCH_TTP223;
       break;
 
@@ -1843,7 +1840,7 @@ static void nRF52_setup()
 
       pinMode(SOC_GPIO_PIN_TEC_INT, INPUT);
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       break;
 
     case NRF52_SEEED_X1:
@@ -1877,7 +1874,7 @@ static void nRF52_setup()
       lmic_pins.dio[0] = SOC_GPIO_PIN_X1_DIO8; /* LR2021 */
 #endif /* USE_RADIOLIB */
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       hw_info.audio    = AUDIO_PWM;
       break;
 
@@ -1899,7 +1896,7 @@ static void nRF52_setup()
       lmic_pins.dio[0] = SOC_GPIO_PIN_ND_DIO1;
 #endif /* USE_RADIOLIB */
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       break;
 
     case NRF52_NORDIC_PCA10059:
@@ -1914,7 +1911,7 @@ static void nRF52_setup()
       ledOff(SOC_GPIO_LED_PCA10059_BLUE);
       ledOff(SOC_GPIO_LED_PCA10059_STATUS);
 
-      hw_info.revision = 3; /* Unknown */
+      hw_info.revision = 0; /* Unknown */
       break;
   }
 
@@ -2318,8 +2315,7 @@ static void nRF52_post_init()
                    F("Echo"));
     Serial.print  (F(" ("));
     Serial.print  (nRF52_board == NRF52_LILYGO_TECHO_CARD ? "Card" :
-                   hw_info.revision > 2 ?
-                   Hardware_Rev[3] : Hardware_Rev[hw_info.revision]);
+                   Hardware_Revision);
     Serial.println(F(") Power-on Self Test"));
     Serial.println();
     Serial.flush();

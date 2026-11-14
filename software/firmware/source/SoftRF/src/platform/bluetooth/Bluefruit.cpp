@@ -487,8 +487,7 @@ void nRF5x_Bluetooth_setup()
   // Configure and Start Device Information Service
   bledis.setManufacturer(nRF5x_Device_Manufacturer);
   bledis.setModel(nRF5x_Device_Model);
-  bledis.setHardwareRev(hw_info.revision > 2 ?
-                        Hardware_Rev[3] : Hardware_Rev[hw_info.revision]);
+  bledis.setHardwareRev(Hardware_Revision);
   bledis.setSoftwareRev(SOFTRF_FIRMWARE_VERSION);
   bledis.begin();
 

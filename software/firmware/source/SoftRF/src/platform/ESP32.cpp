@@ -164,13 +164,7 @@ SemaphoreHandle_t Display_Semaphore;
 unsigned long TaskInfoTime;
 #endif /* USE_EPD_TASK */
 
-const char *Hardware_Rev[] = {
-  [0] = "2024-02-28",
-  [1] = "1.0",
-  [2] = "N/A",
-  [3] = "Unknown"
-};
-
+const char *Hardware_Revision = "Unknown";
 static bool screen_saver = false;
 #endif /* USE_EPAPER */
 
@@ -1902,12 +1896,13 @@ static void ESP32_setup()
     } else {
 
       if (off_oled_is_active) {
-        esp32_board      = ESP32_LILYGO_T3S3_OLED;
-        hw_info.model    = SOFTRF_MODEL_STANDALONE;
-        hw_info.revision = STD_EDN_REV_T3S3_OLED; /* V1.2 V1.3 */
+        esp32_board       = ESP32_LILYGO_T3S3_OLED;
+        hw_info.model     = SOFTRF_MODEL_STANDALONE;
+        hw_info.revision  = STD_EDN_REV_T3S3_OLED; /* V1.2 V1.3 */
       } else {
-        hw_info.model    = SOFTRF_MODEL_INK;
-        hw_info.revision = 0; /* 2024-02-28 */
+        hw_info.model     = SOFTRF_MODEL_INK;
+        hw_info.revision  = 0; /* 2024-02-28 */
+        Hardware_Revision = "2024-02-28";
       }
 
 #if ARDUINO_USB_CDC_ON_BOOT
@@ -2010,7 +2005,8 @@ static void ESP32_setup()
       Wire1.beginTransmission(PCA9557_ADDRESS);
       ESP32_has_gpio_extension = (Wire1.endTransmission() == 0);
 
-      hw_info.revision = 1; /* PCB 1.0 , L76K GNSS */
+      hw_info.revision  = 1; /* PCB 1.0 , L76K GNSS */
+      Hardware_Revision = "1.0";
 
       if (ESP32_has_gpio_extension) {
         pca9557 = new PCA9557(PCA9557_ADDRESS, &Wire1);
@@ -2023,7 +2019,8 @@ static void ESP32_setup()
           high_cnt += pca9557->digitalRead(SOC_EXPIO_PIN_M5_GNSS_VER) == HIGH;
         }
         if (high_cnt >= 3) {
-          hw_info.revision = 2; /* PCB 2.x , AG3352 GNSS */
+          hw_info.revision  = 2; /* PCB 2.x , AG3352 GNSS */
+          Hardware_Revision = "2.0";
         }
       } else {
         WIRE_FINI(Wire1);

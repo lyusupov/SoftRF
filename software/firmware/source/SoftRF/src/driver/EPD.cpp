@@ -200,9 +200,8 @@ bool EPD_setup(bool splash_screen)
   }
 
   char buf[32];
-  snprintf(buf, sizeof(buf), "HW: %s SW: %s", hw_info.revision > 2 ?
-                Hardware_Rev[3] : Hardware_Rev[hw_info.revision],
-                SOFTRF_FIRMWARE_VERSION);
+  snprintf(buf, sizeof(buf), "HW: %s SW: %s",
+                Hardware_Revision, SOFTRF_FIRMWARE_VERSION);
 
   display->setFont(&Org_01);
   display->getTextBounds(buf, 0, 0, &tbx4, &tby4, &tbw4, &tbh4);

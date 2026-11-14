@@ -212,7 +212,9 @@ extern RTTStream RTTSerial;
 #define CFG_ADV_BLINKY_INTERVAL 500
 #endif /* CFG_ADV_BLINKY_INTERVAL */
 
-extern const char *nRF5x_Device_Manufacturer, *nRF5x_Device_Model, *Hardware_Rev[];
+extern const char *nRF5x_Device_Manufacturer;
+extern const char *nRF5x_Device_Model;
+extern const char *Hardware_Revision;
 
 //#include <SoftSPI.h>
 //extern  SoftSPI RadioSPI;

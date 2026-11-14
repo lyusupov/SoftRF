@@ -739,7 +739,7 @@ extern const USB_Device_List_t supported_USB_devices[];
 #if defined(USE_EPAPER)
 typedef void EPD_Task_t;
 
-extern const char *Hardware_Rev[];
+extern const char *Hardware_Revision;
 #endif /* USE_EPAPER */
 
 #if defined(USE_SOFTSPI)

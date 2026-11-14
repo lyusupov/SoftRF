@@ -80,18 +80,12 @@ static nRF54_board_id nRF54_board = NRF54_LR2021EVK1XCS1; /* default */
 
 const char *nRF5x_Device_Manufacturer = SOFTRF_IDENT;
 const char *nRF5x_Device_Model        = "Academy Edition";
+const char *Hardware_Revision         = "Unknown";
 const uint16_t nRF54_Device_Version   = SOFTRF_USB_FW_VERSION;
 
 static uint16_t nRF54_USB_VID       = 0x2886; /* Seeed Technology */
 static uint16_t nRF54_USB_PID_L15   = 0x0066; /* XIAO L15 */
 static uint16_t nRF54_USB_PID_LM20A = 0x0068; /* XIAO LM20A */
-
-const char *Hardware_Rev[] = {
-  [0] = "Unknown",
-  [1] = "Unknown",
-  [2] = "Unknown",
-  [3] = "Unknown"
-};
 
 #if defined(EXCLUDE_EEPROM)
 eeprom_t eeprom_block;
