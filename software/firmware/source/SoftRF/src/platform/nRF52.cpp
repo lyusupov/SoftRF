@@ -1718,11 +1718,25 @@ static void nRF52_setup()
       break;
 
     case NRF52_ELECROW_TN_M1:
-      /* Wake up Quectel L76K GNSS */
-      digitalWrite(SOC_GPIO_PIN_GNSS_M1_RST, HIGH);
-      pinMode(SOC_GPIO_PIN_GNSS_M1_RST, OUTPUT);
-      digitalWrite(SOC_GPIO_PIN_GNSS_M1_WKE, HIGH);
-      pinMode(SOC_GPIO_PIN_GNSS_M1_WKE, OUTPUT);
+      hw_info.revision  = 1; /* PCB 1.0 , L76K GNSS */
+      Hardware_Revision = "1.x";
+
+      switch (hw_info.revision)
+      {
+        case 2: /* AG3352 */
+          digitalWrite(SOC_GPIO_PIN_GNSS_M1_RST, LOW);
+          pinMode(SOC_GPIO_PIN_GNSS_M1_RST, OUTPUT);
+          /* TODO */
+          break;
+        case 1: /* L76K */
+        default:
+          /* Wake up Quectel L76K GNSS */
+          digitalWrite(SOC_GPIO_PIN_GNSS_M1_RST, HIGH);
+          pinMode(SOC_GPIO_PIN_GNSS_M1_RST, OUTPUT);
+          digitalWrite(SOC_GPIO_PIN_GNSS_M1_WKE, HIGH);
+          pinMode(SOC_GPIO_PIN_GNSS_M1_WKE, OUTPUT);
+          break;
+      }
 
       digitalWrite(SOC_GPIO_LED_M1_RED_PWR, HIGH);
       pinMode(SOC_GPIO_LED_M1_RED_PWR,      OUTPUT);
@@ -1737,8 +1751,7 @@ static void nRF52_setup()
       lmic_pins.rst  = SOC_GPIO_PIN_M1_RST;
       lmic_pins.busy = SOC_GPIO_PIN_M1_BUSY;
 
-      hw_info.revision = 0; /* Unknown */
-      hw_info.audio    = AUDIO_PWM;
+      hw_info.audio  = AUDIO_PWM;
       break;
 
     case NRF52_ELECROW_TN_M3:
@@ -3114,7 +3127,16 @@ static void nRF52_fini(int reason)
       break;
 
     case NRF52_ELECROW_TN_M1:
-      digitalWrite(SOC_GPIO_PIN_GNSS_M1_WKE, LOW);
+      switch (hw_info.revision)
+      {
+        case 2: /* AG3352 */
+          /* TODO */
+          break;
+        case 1: /* L76K */
+        default:
+          digitalWrite(SOC_GPIO_PIN_GNSS_M1_WKE, LOW);
+          break;
+      }
 
       digitalWrite(SOC_GPIO_LED_M1_RED,  1-LED_STATE_ON);
       digitalWrite(SOC_GPIO_LED_M1_BLUE, 1-LED_STATE_ON);
@@ -4059,12 +4081,23 @@ static void nRF52_swSer_begin(unsigned long baud)
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_TEC_RX,
                              SOC_GPIO_PIN_GNSS_TEC_TX);
       break;
+
+    case NRF52_ELECROW_TN_M1:
+      switch (hw_info.revision)
+      {
+        case 2: /* AG3352 */
+          baud = 115200; /* Airoha AG3352 default value */
+          break;
+
+        case 1: /* L76K */
+        default:
+          break;
+      }
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:
     case NRF52_LILYGO_TECHO_PLUS:
     case NRF52_NORDIC_PCA10059:
-    case NRF52_ELECROW_TN_M1:
     case NRF52_RADIODDITY_NODARA:
     default:
       Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);

@@ -1461,7 +1461,7 @@ static bool lr11xx_receive()
         }
 
         if (success) {
-          RF_last_rssi = radio_semtech->getRSSI();
+          RF_last_rssi = radio_semtech->getRSSI(true);
           rx_packets_counter++;
         }
       }

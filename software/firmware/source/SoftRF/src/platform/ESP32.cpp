@@ -2771,10 +2771,10 @@ static void ESP32_setup()
 
     switch (hw_info.revision)
     {
-      case 2:/* AG3352 */
+      case 2: /* AG3352 */
         /* TODO */
         break;
-      case 1:/* L76K */
+      case 1: /* L76K */
       default:
         gpio_hold_dis((gpio_num_t) SOC_GPIO_PIN_M5_GNSS_WKE);
         break;
@@ -2797,7 +2797,7 @@ static void ESP32_setup()
 
     switch (hw_info.revision)
     {
-      case 2:/* AG3352 */
+      case 2: /* AG3352 */
         digitalWrite(SOC_GPIO_PIN_M5_GNSS_RST,        LOW);
         pinMode(SOC_GPIO_PIN_M5_GNSS_RST,             OUTPUT);
 
@@ -2817,7 +2817,7 @@ static void ESP32_setup()
         }
         break;
 
-      case 1:/* L76K */
+      case 1: /* L76K */
       default:
         /* Wake up Quectel L76K GNSS */
         digitalWrite(SOC_GPIO_PIN_M5_GNSS_RST,        HIGH);
@@ -4325,8 +4325,18 @@ static void ESP32_fini(int reason)
   } else if (esp32_board == ESP32_ELECROW_TN_M5) {
     WIRE_FINI(Wire);
 
-    digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,        LOW);
-    gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_M5_GNSS_WKE);
+    switch (hw_info.revision)
+    {
+      case 2: /* AG3352 */
+        /* TODO */
+        break;
+      case 1: /* L76K */
+      default:
+        digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,        LOW);
+        gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_M5_GNSS_WKE);
+        break;
+    }
+
     pinMode(SOC_GPIO_PIN_M5_GNSS_RST,             INPUT);
 
 #if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S31)
@@ -5484,7 +5494,7 @@ static void ESP32_swSer_begin(unsigned long baud)
       SerialOutput.print(F("INFO: Elecrow ThinkNode M5 "));
       switch (hw_info.revision)
       {
-        case 2:/* AG3352 */
+        case 2: /* AG3352 */
           SerialOutput.print(F("V2"));
           Serial_GNSS_In.begin(115200, /* Airoha default value */
                                SERIAL_IN_BITS,
@@ -5492,7 +5502,7 @@ static void ESP32_swSer_begin(unsigned long baud)
                                SOC_GPIO_PIN_M5_V2_GNSS_TX);
           break;
 
-        case 1:/* L76K */
+        case 1: /* L76K */
         default:
           SerialOutput.print(F("V1"));
           Serial_GNSS_In.begin(baud, SERIAL_IN_BITS,
