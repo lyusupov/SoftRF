@@ -1718,12 +1718,29 @@ static void nRF52_setup()
       break;
 
     case NRF52_ELECROW_TN_M1:
-      hw_info.revision  = 1; /* PCB 1.0 , L76K GNSS */
-      Hardware_Revision = "1.x";
+      pinMode(SOC_GPIO_PIN_GNSS_M1_VER, INPUT);
+
+      delay(2);
+
+      {
+        uint8_t low_cnt = 0;
+        for (uint8_t i = 0; i < 10; i++) {
+            low_cnt += digitalRead(SOC_GPIO_PIN_GNSS_M1_VER) == LOW;
+        }
+        if (low_cnt >= 3) {
+          hw_info.revision  = 2; /* PCB 2.0 , AG3352 GNSS */
+          Hardware_Revision = "2.0";
+        } else {
+          hw_info.revision  = 1; /* PCB 1.x , L76K GNSS */
+          Hardware_Revision = "1.x";
+        }
+      }
 
       switch (hw_info.revision)
       {
         case 2: /* AG3352 */
+          digitalWrite(SOC_GPIO_PIN_GNSS_M1_EN8, HIGH);
+          pinMode(SOC_GPIO_PIN_GNSS_M1_EN8, OUTPUT);
           digitalWrite(SOC_GPIO_PIN_GNSS_M1_RST, LOW);
           pinMode(SOC_GPIO_PIN_GNSS_M1_RST, OUTPUT);
           /* TODO */
@@ -3130,6 +3147,7 @@ static void nRF52_fini(int reason)
       switch (hw_info.revision)
       {
         case 2: /* AG3352 */
+          digitalWrite(SOC_GPIO_PIN_GNSS_M1_EN8, LOW);
           /* TODO */
           break;
         case 1: /* L76K */

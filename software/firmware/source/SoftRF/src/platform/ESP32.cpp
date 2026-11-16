@@ -2015,7 +2015,7 @@ static void ESP32_setup()
         delay(2);
 
         uint8_t high_cnt = 0;
-        for (uint8_t i = 0; i < 5; i++) {
+        for (uint8_t i = 0; i < 10; i++) {
           high_cnt += pca9557->digitalRead(SOC_EXPIO_PIN_M5_GNSS_VER) == HIGH;
         }
         if (high_cnt >= 3) {
@@ -4328,11 +4328,14 @@ static void ESP32_fini(int reason)
     switch (hw_info.revision)
     {
       case 2: /* AG3352 */
+        digitalWrite(SOC_GPIO_PIN_M5_GNSS_0V8_EN, LOW);
+        pinMode(SOC_GPIO_PIN_M5_GNSS_0V8_EN,      INPUT);
+        pinMode(SOC_GPIO_PIN_M5_GNSS_RINT,        INPUT);
         /* TODO */
         break;
       case 1: /* L76K */
       default:
-        digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,        LOW);
+        digitalWrite(SOC_GPIO_PIN_M5_GNSS_WKE,    LOW);
         gpio_hold_en((gpio_num_t) SOC_GPIO_PIN_M5_GNSS_WKE);
         break;
     }
