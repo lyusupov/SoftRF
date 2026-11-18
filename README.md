@@ -31,12 +31,13 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
     * [**Dongle Edition**](https://github.com/lyusupov/SoftRF/wiki/Dongle-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
 * **Portable**
     * [**Concorde Edition**](https://github.com/lyusupov/SoftRF/wiki/Concorde-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
-    * [**Airventure Edition**](https://github.com/lyusupov/SoftRF/wiki/Airventure-Edition)
-    * [**Handheld Edition**](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)
-    * [**Gizmo Edition**](https://github.com/lyusupov/SoftRF/wiki/Gizmo-Edition)
     * [**Prime Mark IV**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIV) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
     * [**Prime Mark III**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkIII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg)
     * [**Prime Mark II**](https://github.com/lyusupov/SoftRF/wiki/Prime-Edition-MkII) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
+    * [**Nodara Edition**](https://github.com/lyusupov/SoftRF/wiki/Nodara-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg)
+    * [**Airventure Edition**](https://github.com/lyusupov/SoftRF/wiki/Airventure-Edition)
+    * [**Handheld Edition**](https://github.com/lyusupov/SoftRF/wiki/Handheld-Edition)
+    * [**Gizmo Edition**](https://github.com/lyusupov/SoftRF/wiki/Gizmo-Edition)
 * **Classic** 2.25 inch instrument
     * [**Standalone Edition**](https://github.com/lyusupov/SoftRF/wiki/Standalone-Edition) ![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/updated-icon.gif)
 * **Wireless** 2.7 inch E-Ink **display**
@@ -207,6 +208,7 @@ OEM|Model(s)
 [Olimex](https://www.olimex.com)|[**Balkan**](https://github.com/lyusupov/SoftRF/wiki/Balkan-Edition)
 [RadioMaster RC](https://radiomasterrc.com/)|[**Nano**](https://github.com/lyusupov/SoftRF/wiki/Nano-Edition)
 [Ebyte](https://ebyteiot.com/)|[**Retro Mark II**](https://github.com/lyusupov/SoftRF/wiki/Retro-Edition-MkII)
+[Radioddity](https://www.radioddity.com/)|[**Nodara**](https://github.com/lyusupov/SoftRF/wiki/Nodara-Edition)
 
 <br>
 
