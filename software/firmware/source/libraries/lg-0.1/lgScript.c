@@ -542,7 +542,8 @@ int lgScriptStore(char *script)
    LG_DBG(LG_DEBUG_TRACE, "script=[%s]", script);
 
    handle = lgHdlAlloc(
-      LG_HDL_TYPE_SCRIPT, sizeof(lgScript_t), (void**)&s, _scriptClose);
+      LG_HDL_TYPE_SCRIPT, sizeof(lgScript_t), (void**)&s,
+      (destructor_t)_scriptClose);
 
    if (handle < 0) return LG_NO_MEMORY;
 

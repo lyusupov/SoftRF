@@ -56,7 +56,7 @@ For more information, please refer to <http://unlicense.org/>
 
 void xWrite(lgChipObj_p chip, int gpio, int value);
 
-callbk_t lgGpioSamplesFunc = NULL;
+lgGpioAlertsFunc_t lgGpioSamplesFunc = NULL;
 void *lgGpioSamplesUserdata = NULL;
 
 static void _lgGpiochipClose(void *objPtr)

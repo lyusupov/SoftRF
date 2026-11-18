@@ -122,7 +122,8 @@ int lgFileOpen(char *file, int mode)
    }
 
    handle = lgHdlAlloc(
-      LG_HDL_TYPE_FILE, sizeof(lgFileObj_t), (void**)&h, _fileClose);
+      LG_HDL_TYPE_FILE, sizeof(lgFileObj_t), (void**)&h,
+      (destructor_t)_fileClose);
 
    if (handle < 0)
    {

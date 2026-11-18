@@ -57,7 +57,7 @@ typedef struct
    int next;               // next handle of type
    int previous;           // previous handle of type
    uint32_t magic;         // guard to check object of correct type
-   callbk_t destructor;    // used to correctly free object resources
+   destructor_t destructor; // used to correctly free object resources
    int owner;              // id of owning thread
    int share;              // if object can be used by non-owners
 } lgHdlHdr_t, *lgHdlHdr_p;
@@ -124,7 +124,7 @@ static int xHdlGet(void)
 }
 
 int lgHdlAlloc(
-   int type, int objSize, void **objPtr, callbk_t destructor)
+   int type, int objSize, void **objPtr, destructor_t destructor)
 {
    int handle;
    int last;

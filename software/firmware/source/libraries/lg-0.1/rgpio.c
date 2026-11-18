@@ -57,7 +57,7 @@ For more information, please refer to <http://unlicense.org/>
 
 #define MAX_SBC 32
 
-typedef void (*CBF_t) ();
+typedef void (*CBF_t) (int, int, int, uint8_t, uint64_t, void*);
 
 struct callback_s
 {

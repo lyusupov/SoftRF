@@ -42,7 +42,7 @@ For more information, please refer to <http://unlicense.org/>
 #define LG_HDL_TYPE_SPI    7
 
 int lgHdlAlloc
-   (int type, int objSize, void **objPtr, callbk_t destructor);
+   (int type, int objSize, void **objPtr, destructor_t destructor);
 
 int lgHdlFree(int handle, int type);
 

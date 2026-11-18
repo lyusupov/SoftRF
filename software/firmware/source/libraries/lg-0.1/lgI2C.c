@@ -874,7 +874,8 @@ int lgI2cOpen(int i2cDev, int i2cAddr, int i2cFlags)
    LG_DBG(LG_DEBUG_ALLOC, "alloc i2c: *%p", (void*)i2c);
 
    handle = lgHdlAlloc(
-      LG_HDL_TYPE_I2C, sizeof(lgI2cObj_t), (void **)&i2c, _lgI2cClose);
+      LG_HDL_TYPE_I2C, sizeof(lgI2cObj_t), (void **)&i2c,
+      (destructor_t)_lgI2cClose);
 
    if (handle < 0)
    {

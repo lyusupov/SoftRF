@@ -123,7 +123,8 @@ int lgNotifyOpenWithSize(int bufSize)
    LG_DBG(LG_DEBUG_INTERNAL, "bufSize=%d", bufSize);
 
    handle = lgHdlAlloc(
-      LG_HDL_TYPE_NOTIFY, sizeof(lgNotify_t), (void**)&h, _notifyClose);
+      LG_HDL_TYPE_NOTIFY, sizeof(lgNotify_t), (void**)&h,
+      (destructor_t)_notifyClose);
 
    if (handle < 0) {return LG_NO_MEMORY;}
 
@@ -178,7 +179,8 @@ int lgNotifyOpenInBand(int fd)
    LG_DBG(LG_DEBUG_TRACE, "fd=%d", fd);
 
    handle = lgHdlAlloc(
-      LG_HDL_TYPE_NOTIFY, sizeof(lgNotify_t), (void**)&h, _notifyClose);
+      LG_HDL_TYPE_NOTIFY, sizeof(lgNotify_t), (void**)&h,
+      (destructor_t)_notifyClose);
 
    if (handle < 0) {return LG_NO_MEMORY;}
 

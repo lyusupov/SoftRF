@@ -40,7 +40,7 @@ typedef struct lgLineInf_s
    int      fd;
    int      debounce_us;
    int      watchdog_us;
-   callbk_t alertFunc;
+   lgGpioAlertsFunc_t alertFunc;
    void     *userdata;
    uint32_t offset;
    uint32_t *offsets;
@@ -63,7 +63,7 @@ void xWrite(lgChipObj_p chip, int gpio, int value);
 void xGroupWrite(
    lgChipObj_p chip, int gpio, uint64_t groupBits, uint64_t groupMask);
 
-extern callbk_t lgGpioSamplesFunc;
+extern lgGpioAlertsFunc_t lgGpioSamplesFunc;
 extern void *lgGpioSamplesUserdata;
 
 #endif

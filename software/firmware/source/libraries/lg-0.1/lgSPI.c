@@ -115,7 +115,8 @@ int lgSpiOpen(
    }
 
    handle = lgHdlAlloc(
-      LG_HDL_TYPE_SPI, sizeof(lgSpiObj_t), (void **)&spi, _lgSpiClose);
+      LG_HDL_TYPE_SPI, sizeof(lgSpiObj_t), (void **)&spi,
+      (destructor_t)_lgSpiClose);
 
    if (handle < 0)
    {
