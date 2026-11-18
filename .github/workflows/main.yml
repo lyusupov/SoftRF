@@ -556,27 +556,28 @@ jobs:
           fi
           if [[ "$BOARD" =~ "WCH:ch32v:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://github.com/openwch/board_manager_files/raw/main/package_ch32v_index.json" --save-prefs ;
-            arduino --install-boards WCH:ch32v:1.0.4 ;
+            # arduino --install-boards WCH:ch32v:1.0.4 ;
+            arduino --install-boards WCH:ch32v:1.0.7 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_clock=CH32V30x_EVT_144MHz_HSE"  --save-prefs ;
             arduino --pref "custom_rtlib=CH32V30x_EVT_nanofp"      --save-prefs ;
             arduino --pref "custom_usb=CH32V30x_EVT_tinyusb_usbfs" --save-prefs ;
-            mkdir -p $HOME/Arduino/hardware/WCH ;
-            cd $HOME/Arduino/hardware/WCH ;
-            # wget https://github.com/openwch/arduino_core_ch32/archive/refs/heads/main.zip ;
-            # unzip main.zip ;
-            # rm main.zip ;
-            # mv arduino_core_ch32-main ch32v ;
-            wget https://github.com/openwch/arduino_core_ch32/archive/07fe3bdf4d64fda115c0f116a31fb32ad7c5e0af.zip ;
-            unzip 07fe3bdf4d64fda115c0f116a31fb32ad7c5e0af.zip ;
-            rm 07fe3bdf4d64fda115c0f116a31fb32ad7c5e0af.zip ;
-            mv arduino_core_ch32-07fe3bdf4d64fda115c0f116a31fb32ad7c5e0af ch32v ;
-            mv $HOME/.arduino15/packages/WCH/hardware/ch32v/1.0.4 /tmp/ ;
-            wget https://github.com/adafruit/Adafruit_TinyUSB_Arduino/archive/refs/tags/${TINYUSB_VERSION}.zip ;
-            unzip ${TINYUSB_VERSION}.zip ;
-            rm ${TINYUSB_VERSION}.zip ;
-            rmdir ch32v/libraries/Adafruit_TinyUSB_Arduino ;
-            mv Adafruit_TinyUSB_Arduino-${TINYUSB_VERSION} ch32v/libraries/Adafruit_TinyUSB_Arduino ;
+            # mkdir -p $HOME/Arduino/hardware/WCH ;
+            # cd $HOME/Arduino/hardware/WCH ;
+            # # wget https://github.com/openwch/arduino_core_ch32/archive/refs/heads/main.zip ;
+            # # unzip main.zip ;
+            # # rm main.zip ;
+            # # mv arduino_core_ch32-main ch32v ;
+            # wget https://github.com/openwch/arduino_core_ch32/archive/07fe3bdf4d64fda115c0f116a31fb32ad7c5e0af.zip ;
+            # unzip 07fe3bdf4d64fda115c0f116a31fb32ad7c5e0af.zip ;
+            # rm 07fe3bdf4d64fda115c0f116a31fb32ad7c5e0af.zip ;
+            # mv arduino_core_ch32-07fe3bdf4d64fda115c0f116a31fb32ad7c5e0af ch32v ;
+            # mv $HOME/.arduino15/packages/WCH/hardware/ch32v/1.0.4 /tmp/ ;
+            # wget https://github.com/adafruit/Adafruit_TinyUSB_Arduino/archive/refs/tags/${TINYUSB_VERSION}.zip ;
+            # unzip ${TINYUSB_VERSION}.zip ;
+            # rm ${TINYUSB_VERSION}.zip ;
+            # rmdir ch32v/libraries/Adafruit_TinyUSB_Arduino ;
+            # mv Adafruit_TinyUSB_Arduino-${TINYUSB_VERSION} ch32v/libraries/Adafruit_TinyUSB_Arduino ;
             cd $GITHUB_WORKSPACE ;
           fi
           if [[ "$BOARD" =~ "arduino:zephyr_main:" ]]; then
