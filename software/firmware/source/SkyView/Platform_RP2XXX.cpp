@@ -664,7 +664,7 @@ static uint32_t RP2xxx_maxSketchSpace()
 static void RP2xxx_WiFiUDP_stopAll()
 {
 #if !defined(EXCLUDE_WIFI)
-#if !(ARDUINO_PICO_MAJOR >= 6 && ARDUINO_PICO_MINOR >= 3 && ARDUINO_PICO_REVISION >= 1)
+#if !(ARDUINO_PICO_MAJOR >= 6 && ARDUINO_PICO_MINOR > 3)
   WiFiUDP::stopAll();
 #endif /* VERSION */
 #endif /* EXCLUDE_WIFI */
