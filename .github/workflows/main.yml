@@ -106,6 +106,13 @@ jobs:
           else if [[ "$BOARD" =~ "raspberry" ]]; then
               sudo apt-get update ;
               sudo apt-get install libsqlite3-dev libasound2-dev libsndfile1-dev ;
+              cd $GITHUB_WORKSPACE ;
+              wget https://sourceforge.net/projects/gcc-precompiled/files/gcc-x86_64-linux-11.2.0.tar.xz ;
+              mkdir gcc11 ;
+              cd gcc11 ;
+              unxz -dc ../gcc-x86_64-linux-11.2.0.tar.xz | tar xf - ;
+              cd .. ;
+              rm gcc-x86_64-linux-11.2.0.tar.xz ;
             else
               if [[ "$BOARD" =~ "SiliconLabs:silabs:" ]] || [[ "$BOARD" =~ "arduino:zephyr_main:" ]] || [[ "$BOARD" =~ "sifli:sf32lb52:" ]]; then
                 wget https://github.com/arduino/arduino-cli/releases/download/${ARDUINO_CLI_VERSION}/arduino-cli_${ARDUINO_CLI_VERSION}_Linux_64bit.tar.gz ;
@@ -654,6 +661,7 @@ jobs:
             energia --verify --verbose-build --board $BOARD $PWD/software/firmware/source/UATbridge/UATbridge.ino ;
           fi ;
           if [[ "$BOARD" =~ "raspberry"            ]]; then
+            export PATH=$GITHUB_WORKSPACE/gcc11/bin:$PATH ;
             cd $GITHUB_WORKSPACE/software/firmware/source/SoftRF ;
             make pi ;
             make clean ;

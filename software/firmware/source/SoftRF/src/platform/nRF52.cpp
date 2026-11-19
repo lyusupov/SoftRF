@@ -880,6 +880,7 @@ static void nRF52_setup()
                 nRF52_bl_check("T-Echo-Card")    ? NRF52_LILYGO_TECHO_CARD    :
                 nRF52_bl_check("MeshTracker-X1") ? NRF52_SEEED_X1             :
                 nRF52_bl_check("NODARA")         ? NRF52_RADIODDITY_NODARA    :
+                nRF52_bl_check("Nodara")         ? NRF52_RADIODDITY_NODARA    :
 #if !defined(EXCLUDE_WIP)
                 nRF52_bl_check("T2000")          ? NRF52_SEEED_T2000          :
                 nRF52_bl_check("TRACKER L1")     ? NRF52_SEEED_WIO_L1         :
