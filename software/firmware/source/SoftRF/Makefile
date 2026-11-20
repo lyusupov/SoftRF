@@ -275,7 +275,16 @@ ifeq ($(RADIOLIB), yes)
                  $(RADIOLIB_PATH)/modules/LR11x0/LR11x0_crypto.o \
                  $(RADIOLIB_PATH)/modules/LR11x0/LR11x0_gnss.o \
                  $(RADIOLIB_PATH)/modules/LR11x0/LR11x0_wifi.o \
-                 $(RADIOLIB_PATH)/modules/LR11x0/LR_common.o
+                 $(RADIOLIB_PATH)/modules/LR11x0/LR_common.o \
+                 $(RADIOLIB_PATH)/modules/LR2021/LR2021.o \
+                 $(RADIOLIB_PATH)/modules/LR2021/LR2021_config.o \
+                 $(RADIOLIB_PATH)/modules/LR2021/LR2021_cmds_radio.o \
+                 $(RADIOLIB_PATH)/modules/LR2021/LR2021_cmds_chip_control.o \
+                 $(RADIOLIB_PATH)/modules/LR2021/LR2021_cmds_misc.o \
+                 $(RADIOLIB_PATH)/modules/LR2021/LR2021_cmds_gfsk.o \
+                 $(RADIOLIB_PATH)/modules/LR2021/LR2021_cmds_lora.o \
+                 $(RADIOLIB_PATH)/modules/LR2021/LR2021_cmds_ook.o \
+                 $(RADIOLIB_PATH)/modules/LR2021/LR2021_cmds_flrc.o
   CFLAGS      += -DUSE_RADIOLIB
 endif
 

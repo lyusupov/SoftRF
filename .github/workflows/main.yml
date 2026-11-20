@@ -28,7 +28,7 @@ jobs:
             'esp32:esp32:esp32:PartitionScheme=min_spiffs',
             'esp32:esp32:esp32s2',
             'esp32:esp32:esp32s3:PartitionScheme=default_8MB',
-            # 'esp32:esp32:esp32s31',
+            'esp32:esp32:esp32s31',
             'esp32:esp32:esp32c3',
             'esp32:esp32:esp32c5',
             'esp32:esp32:esp32c6',
