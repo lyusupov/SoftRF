@@ -21,7 +21,8 @@
 #endif
 
 #if defined(ESP32)                     && \
-   !defined(CONFIG_IDF_TARGET_ESP32S2)
+   !defined(CONFIG_IDF_TARGET_ESP32S2) && \
+   !defined(CONFIG_IDF_TARGET_ESP32S31)
 
 #include "Platform_ESP32.h"
 #include "SoCHelper.h"

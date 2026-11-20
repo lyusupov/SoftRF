@@ -30,12 +30,15 @@
     !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
     !defined(CONFIG_IDF_TARGET_ESP32C61) && \
     !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
-    !defined(CONFIG_IDF_TARGET_ESP32P4)
+    !defined(CONFIG_IDF_TARGET_ESP32P4)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32S31)
 #include <soc/rtc_cntl_reg.h>
 #endif /* CONFIG_IDF_TARGET_ESP32C5 || C6 || H2 || P4 */
 #include <rom/spi_flash.h>
 #include <soc/adc_channel.h>
+#if !defined(CONFIG_IDF_TARGET_ESP32S31)
 #include <driver/i2s.h>
+#endif /* CONFIG_IDF_TARGET_ESP32S31 */
 #include <flashchips.h>
 
 #include "SoCHelper.h"
@@ -56,8 +59,11 @@
     defined(CONFIG_IDF_TARGET_ESP32C3) || \
     defined(CONFIG_IDF_TARGET_ESP32C5) || \
     defined(CONFIG_IDF_TARGET_ESP32C6) || \
-    defined(CONFIG_IDF_TARGET_ESP32P4)
+    defined(CONFIG_IDF_TARGET_ESP32P4) || \
+    defined(CONFIG_IDF_TARGET_ESP32S31)
+#if !defined(CONFIG_IDF_TARGET_ESP32S31)
 #include <sqlite3.h>
+#endif /* CONFIG_IDF_TARGET_ESP32S31 */
 #include <SD.h>
 #endif /* CONFIG_IDF_TARGET_ESP32XX */
 
@@ -1201,7 +1207,8 @@ static void ESP32_Battery_setup()
   calibrate_voltage(SOC_GPIO_PIN_BATTERY);
 #elif defined(CONFIG_IDF_TARGET_ESP32C6)  || \
       defined(CONFIG_IDF_TARGET_ESP32C61) || \
-      defined(CONFIG_IDF_TARGET_ESP32H2)
+      defined(CONFIG_IDF_TARGET_ESP32H2)  || \
+      defined(CONFIG_IDF_TARGET_ESP32S31)
   /* TBD */
 #else
 #error "This ESP32 family build variant is not supported!"
@@ -2445,6 +2452,12 @@ static bool play_file(char *filename)
 
   return rval;
 }
+#elif defined(CONFIG_IDF_TARGET_ESP32S31)
+static bool play_file(char *filename)
+{
+  /* TBD */
+  return false;
+}
 #else
 #error "This ESP32 family build variant is not supported!"
 #endif /* CONFIG_IDF_TARGET_ESP32XX */
@@ -2469,7 +2482,8 @@ static void ESP32_TTS(char *message)
     defined(CONFIG_IDF_TARGET_ESP32C3) || \
     defined(CONFIG_IDF_TARGET_ESP32C5) || \
     defined(CONFIG_IDF_TARGET_ESP32C6) || \
-    defined(CONFIG_IDF_TARGET_ESP32P4)
+    defined(CONFIG_IDF_TARGET_ESP32P4) || \
+    defined(CONFIG_IDF_TARGET_ESP32S31)
       if (SD.cardType() == CARD_NONE)
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
       if (!FATFS_is_mounted)
@@ -2534,7 +2548,8 @@ static void ESP32_TTS(char *message)
     defined(CONFIG_IDF_TARGET_ESP32C3) || \
     defined(CONFIG_IDF_TARGET_ESP32C5) || \
     defined(CONFIG_IDF_TARGET_ESP32C6) || \
-    defined(CONFIG_IDF_TARGET_ESP32P4)
+    defined(CONFIG_IDF_TARGET_ESP32P4) || \
+    defined(CONFIG_IDF_TARGET_ESP32S31)
       if (SD.cardType() == CARD_NONE ||
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
       if (!FATFS_is_mounted          ||
@@ -3196,6 +3211,9 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
   SOC_ESP32S3,
   "ESP32-S3",
+#elif defined(CONFIG_IDF_TARGET_ESP32S31)
+  SOC_ESP32S31,
+  "ESP32-S31",
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
   SOC_ESP32C3,
   "ESP32-C3",
@@ -3244,7 +3262,7 @@ const SoC_ops_t ESP32_ops = {
   ESP32_Button_fini,
   ESP32_WDT_setup,
   ESP32_WDT_fini,
-#if !defined(CONFIG_IDF_TARGET_ESP32S2)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32S31)
   &ESP32_Bluetooth_ops,
 #else
   NULL,
