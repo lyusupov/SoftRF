@@ -2006,9 +2006,11 @@ static void lr20xx_channel(int8_t channel)
   }
 }
 
+#if defined(EXCLUDE_LR11XX)
 #if defined(RASPBERRY_PI) || defined(LUCKFOX_LYRA)
 PiHal *RadioLib_HAL = NULL;
 #endif // RASPBERRY_PI
+#endif /* EXCLUDE_LR11XX */
 
 static void lr20xx_setup()
 {
