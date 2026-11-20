@@ -27,13 +27,13 @@ jobs:
             'esp8266:esp8266:nodemcuv2',
             'esp32:esp32:esp32:PartitionScheme=min_spiffs',
             'esp32:esp32:esp32s2',
-            'esp32:esp32:esp32s3',
+            'esp32:esp32:esp32s3:PartitionScheme=default_8MB',
+            # 'esp32:esp32:esp32s31',
             'esp32:esp32:esp32c3',
             'esp32:esp32:esp32c5',
             'esp32:esp32:esp32c6',
             'esp32:esp32:esp32h2',
             'esp32:esp32:esp32p4',
-            # 'esp32:esp32:esp32s31',
             'STM32:stm32:Nucleo_64',
             'STM32:stm32:GenF1',
             #'STMicroelectronics:stm32:GenF1',
@@ -193,7 +193,7 @@ jobs:
             arduino --pref "custom_UploadSpeed=esp32s2_921600"         --save-prefs ;
             cd $GITHUB_WORKSPACE ;
           fi
-          if [[ "$BOARD" =~ "esp32:esp32:esp32s3" ]]; then
+          if [[ "$BOARD" =~ "esp32:esp32:esp32s3:" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json" --save-prefs ;
             arduino --install-boards esp32:esp32:2.0.17 ;
             # arduino --install-boards esp32:esp32:3.3.13 ;
@@ -318,7 +318,7 @@ jobs:
           if [[ "$BOARD" =~ "esp32:esp32:esp32p4" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
             arduino --install-boards esp32:esp32:3.3.13 ;
-            # arduino --install-boards esp32:esp32:4.0.0-RC1 ;
+            # arduino --install-boards esp32:esp32:4.0.0 ;
             arduino --board $BOARD --save-prefs ;
             arduino --pref "custom_ChipVariant=esp32p4_prev3"          --save-prefs ;
             arduino --pref "custom_CPUFreq=esp32p4_40"                 --save-prefs ;
@@ -341,7 +341,7 @@ jobs:
           fi
           if [[ "$BOARD" =~ "esp32:esp32:esp32s31" ]]; then
             arduino --pref "boardsmanager.additional.urls=https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json" --save-prefs ;
-            arduino --install-boards esp32:esp32:4.0.0-RC1 ;
+            arduino --install-boards esp32:esp32:4.0.0 ;
             arduino --board $BOARD --save-prefs ;
             # arduino --pref "custom_USBMode=esp32s31_default"         --save-prefs ;
             # arduino --pref "custom_CDCOnBoot=esp32s31_cdc"           --save-prefs ;

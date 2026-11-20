@@ -62,6 +62,7 @@ typedef _TIME_T_ time_t;
 
 #if !defined(HACKRF_ONE) && !defined(ARDUINO)
 #include <unistd.h>
+#include <time.h>
 
 #define MODE_S_INTERACTIVE_TTL 60 /* TTL before being removed */
 typedef long long ms_time_t;

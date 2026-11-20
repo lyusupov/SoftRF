@@ -3338,7 +3338,7 @@ static void ESP32_post_init()
   }
 #endif /* CONFIG_IDF_TARGET_ESP32S3-P4 */
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S31)
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
 #if !defined(EXCLUDE_VOICE_MESSAGE)
   if (esp32_board == ESP32_LILYGO_T_TWR2 && hw_info.revision == 1 && uSD_is_attached)
   {
@@ -3753,7 +3753,7 @@ static void ESP32_loop()
     break;
   }
 
-#if defined(CONFIG_IDF_TARGET_ESP32S3) || defined(CONFIG_IDF_TARGET_ESP32S31)
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
   if (!RTC_sync) {
     if (rtc &&
         gnss.date.isValid()                         &&
