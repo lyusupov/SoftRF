@@ -26,7 +26,8 @@
     !defined(CONFIG_IDF_TARGET_ESP32C6)  && \
     !defined(CONFIG_IDF_TARGET_ESP32C61) && \
     !defined(CONFIG_IDF_TARGET_ESP32H2)  && \
-    !defined(CONFIG_IDF_TARGET_ESP32P4)
+    !defined(CONFIG_IDF_TARGET_ESP32P4)  && \
+    !defined(CONFIG_IDF_TARGET_ESP32S31)
 #include <soc/rtc_cntl_reg.h>
 #endif /* CONFIG_IDF_TARGET_ESP32C5 || C6 || H2 || P4 */
 #include <rom/spi_flash.h>
@@ -45,14 +46,18 @@
 #include "GNSSHelper.h"
 
 #include <battery.h>
+#if !defined(CONFIG_IDF_TARGET_ESP32S31)
 #include <sqlite3.h>
+#endif /* CONFIG_IDF_TARGET_ESP32S31 */
 #include <SD.h>
 #include <bma.h>
 
 //#include "driver/i2s.h"
 
 #include <esp_wifi.h>
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && \
+    !defined(CONFIG_IDF_TARGET_ESP32P4) && \
+    !defined(CONFIG_IDF_TARGET_ESP32S31)
 #include <esp_bt.h>
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
@@ -95,9 +100,11 @@ static union {
   uint64_t chipmacid;
 };
 
+#if !defined(CONFIG_IDF_TARGET_ESP32S31)
 static sqlite3 *fln_db;
 static sqlite3 *ogn_db;
 static sqlite3 *icao_db;
+#endif /* CONFIG_IDF_TARGET_ESP32S31 */
 
 SPIClass uSD_SPI(
 #if !defined(CONFIG_IDF_TARGET_ESP32S2)
@@ -658,7 +665,9 @@ static void ESP32_fini()
 
   esp_wifi_stop();
 
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && \
+    !defined(CONFIG_IDF_TARGET_ESP32P4) && \
+    !defined(CONFIG_IDF_TARGET_ESP32S31)
   esp_bt_controller_disable();
 #endif /* CONFIG_IDF_TARGET_ESP32S2 */
 
@@ -675,7 +684,8 @@ static void ESP32_fini()
     delay(20);
 
 #if !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32C5) && \
-    !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+    !defined(CONFIG_IDF_TARGET_ESP32C6) && !defined(CONFIG_IDF_TARGET_ESP32P4) && \
+    !defined(CONFIG_IDF_TARGET_ESP32S31)
     esp_sleep_enable_ext0_wakeup((gpio_num_t) SOC_GPIO_PIN_TWATCH_PMU_IRQ, 0); // 1 = High, 0 = Low
 #endif /* CONFIG_IDF_TARGET_ESP32C3 || C6 */
   }
@@ -760,7 +770,9 @@ static void ESP32_WiFi_set_param(int ndx, int value)
     ESP_ERROR_CHECK(esp_wifi_set_max_tx_power(ESP32_dBm_to_power_level[value]));
     break;
   case WIFI_PARAM_DHCP_LEASE_TIME:
-#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
+#if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 6
+    /* TODO */
+#elif defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR>=5
     extern esp_netif_t *get_esp_interface_netif(esp_interface_t interface);
 
     esp_netif_dhcps_option(
@@ -965,7 +977,7 @@ static float ESP32_Battery_voltage()
 static bool ESP32_DB_init()
 {
 #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5) || \
-    defined(CONFIG_IDF_TARGET_ESP32C6)
+    defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32S31)
   return false;
 #else
 
@@ -1017,7 +1029,7 @@ static bool ESP32_DB_init()
 static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 {
 #if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32C5) || \
-    defined(CONFIG_IDF_TARGET_ESP32C6)
+    defined(CONFIG_IDF_TARGET_ESP32C6) || defined(CONFIG_IDF_TARGET_ESP32S31)
   return false;
 #else
   sqlite3_stmt *stmt;
@@ -1123,7 +1135,7 @@ static bool ESP32_DB_query(uint8_t type, uint32_t id, char *buf, size_t size)
 
 static void ESP32_DB_fini()
 {
-
+#if !defined(CONFIG_IDF_TARGET_ESP32S31)
     if (fln_db != NULL) {
       sqlite3_close(fln_db);
     }
@@ -1137,7 +1149,7 @@ static void ESP32_DB_fini()
     }
 
     sqlite3_shutdown();
-
+#endif /* CONFIG_IDF_TARGET_ESP32S31 */
     SD.end();
 }
 
@@ -1912,6 +1924,9 @@ const SoC_ops_t ESP32_ops = {
 #elif defined(CONFIG_IDF_TARGET_ESP32S3)
   SOC_ESP32S3,
   "ESP32-S3",
+#elif defined(CONFIG_IDF_TARGET_ESP32S31)
+  SOC_ESP32S31,
+  "ESP32-S31",
 #elif defined(CONFIG_IDF_TARGET_ESP32C3)
   SOC_ESP32C3,
   "ESP32-C3",
@@ -1958,7 +1973,9 @@ const SoC_ops_t ESP32_ops = {
   ESP32_WDT_setup,
   ESP32_WDT_fini,
   ESP32_Service_Mode,
-#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32P4)
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && \
+    !defined(CONFIG_IDF_TARGET_ESP32P4) && \
+    !defined(CONFIG_IDF_TARGET_ESP32S31)
 #if defined(USE_ARDUINOBLE)
   &ArdBLE_Bluetooth_ops,
 #else

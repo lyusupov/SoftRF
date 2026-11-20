@@ -22,7 +22,8 @@
 
 #if defined(ESP32)                     && \
    !defined(CONFIG_IDF_TARGET_ESP32S2) && \
-   !defined(CONFIG_IDF_TARGET_ESP32P4)
+   !defined(CONFIG_IDF_TARGET_ESP32P4) && \
+   !defined(CONFIG_IDF_TARGET_ESP32S31)
 
 #include "SoCHelper.h"
 
