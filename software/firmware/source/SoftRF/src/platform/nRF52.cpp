@@ -4106,12 +4106,17 @@ static void nRF52_swSer_begin(unsigned long baud)
       {
         case 2: /* AG3352 */
           baud = 115200; /* Airoha AG3352 default value */
+          Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_M1_RX,
+                                 SOC_GPIO_PIN_GNSS_M1_TX);
           break;
 
         case 1: /* L76K */
         default:
+          Serial_GNSS_In.setPins(SOC_GPIO_PIN_GNSS_RX, SOC_GPIO_PIN_GNSS_TX);
           break;
       }
+      break;
+
     case NRF52_LILYGO_TECHO_REV_0:
     case NRF52_LILYGO_TECHO_REV_1:
     case NRF52_LILYGO_TECHO_REV_2:

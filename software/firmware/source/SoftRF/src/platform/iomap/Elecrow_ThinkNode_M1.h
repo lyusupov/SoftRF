@@ -4,9 +4,9 @@
 #define SOC_GPIO_PIN_CONS_M1_RX   _PINNUM(0,  9) // P0.09 , No NFC
 #define SOC_GPIO_PIN_CONS_M1_TX   _PINNUM(0, 10) // P0.10 , No NFC
 
-/* V1: L76K, V2: AG3352 */
-#define SOC_GPIO_PIN_GNSS_M1_RX   _PINNUM(1,  9) // P1.09
-#define SOC_GPIO_PIN_GNSS_M1_TX   _PINNUM(1,  8) // P1.08
+/* V1: L76K,same Rx/Tx as T-Echo uses ; V2: AG3352, reverted Rx/Tx */
+#define SOC_GPIO_PIN_GNSS_M1_RX   _PINNUM(1,  8) // P1.08 V2
+#define SOC_GPIO_PIN_GNSS_M1_TX   _PINNUM(1,  9) // P1.09 V2
 
 #define SOC_GPIO_PIN_GNSS_M1_PPS  _PINNUM(1,  0) // P1.00 - V1.5+, NC - V1.0
 #define SOC_GPIO_PIN_GNSS_M1_SW   _PINNUM(1,  1) // P1.01 V1
