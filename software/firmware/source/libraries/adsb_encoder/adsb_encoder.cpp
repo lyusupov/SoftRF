@@ -24,9 +24,15 @@ static unsigned int crc_table[256];
 #endif
 
 #if defined(ENERGIA_ARCH_CC13XX) || defined(ENERGIA_ARCH_CC13X2)  || \
-    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_RENESAS) || \
-    defined(ARDUINO_ARCH_SILABS)
+    defined(ARDUINO_ARCH_STM32)  || defined(ARDUINO_ARCH_RENESAS)
 #include <avr/pgmspace.h>
+#endif
+
+#if defined(ARDUINO_ARCH_SILABS)
+#ifndef PROGMEM
+#define PROGMEM
+#endif
+#define pgm_read_dword(addr) (*(const unsigned long *)(addr))
 #endif
 
 static const unsigned int crc_table[256] PROGMEM = 

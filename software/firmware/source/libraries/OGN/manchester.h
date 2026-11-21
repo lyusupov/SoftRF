@@ -6,8 +6,8 @@
    (defined(ARDUINO_ARCH_RP2040)   && defined(ARDUINO_ARCH_MBED))  || \
    (defined(ARDUINO_ARCH_NRF52840) && defined(ARDUINO_ARCH_MBED))  || \
     defined(ARDUINO_ARCH_RENESAS)  || defined(ARDUINO_ARCH_SAMD)   || \
-    defined(ARDUINO_ARCH_SILABS)   || defined(ARDUINO_ARCH_CH32)   || \
-    defined(ARDUINO_ARCH_ZEPHYR)   || defined(ARDUINO_ARCH_NRF54L15CLEAN)
+    defined(ARDUINO_ARCH_CH32)     || defined(ARDUINO_ARCH_ZEPHYR) || \
+    defined(ARDUINO_ARCH_NRF54L15CLEAN)
 #include <avr/pgmspace.h>
 #endif
 
@@ -23,6 +23,13 @@
 #if defined(ESP8266) || defined(ESP32) || defined(__ASR6501__) || \
     defined(ARDUINO_ARCH_ASR650X) || (defined(ARDUINO_ARCH_RP2040) && !defined(ARDUINO_ARCH_MBED))
 #include <pgmspace.h>
+#endif
+
+#if defined(ARDUINO_ARCH_SILABS)
+#ifndef PROGMEM
+#define PROGMEM
+#endif
+#define pgm_read_byte(addr) (*(const unsigned char *)(addr))
 #endif
 
 const uint8_t PROGMEM ManchesterEncode[0x10] =  // lookup table for 4-bit nibbles for quick Manchester encoding
