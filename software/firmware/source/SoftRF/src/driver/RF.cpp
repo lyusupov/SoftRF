@@ -338,10 +338,15 @@ void RF_loop()
       settings->rf_protocol == RF_PROTOCOL_ADSB_1090 &&
       millis() - ModeS_Time_Marker > MODES_TASK_INTERVAL) {
     struct mode_s_aircraft *a;
+    long ttl = MODE_S_INTERACTIVE_TTL * 1000;
 
     for (a = rl_mode_s_state.aircrafts; a; a = a->next) {
-      if (a->even_cprtime && a->odd_cprtime &&
-          abs((long) (a->even_cprtime - a->odd_cprtime)) <= MODE_S_INTERACTIVE_TTL * 1000 ) {
+      if (a->even_cprtime    && a->odd_cprtime                  &&
+          abs((long) (a->even_cprtime - a->odd_cprtime)) <= ttl &&
+          /* Null Island */
+          a->odd_cprlat != 0 && a->even_cprlat != 0             &&
+          /* Greenwich meridian - TODO */
+          a->odd_cprlon != 0 && a->even_cprlon != 0 ) {
         if (es1090_decode(a, &ThisAircraft, &fo)) {
           memset(fo.raw, 0, sizeof(fo.raw));
           Traffic_Update(&fo);

@@ -80,6 +80,7 @@ DIY, multi-functional, compatible, sub-1 GHz ISM band radio based proximity awar
 * **Weatherproof**
     * [**Card  Mark III**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition-MkIII)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) - IP66
     * [**Card  Mark II**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition-MkII)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) - IP66
+    * [**Nodara Edition**](https://github.com/lyusupov/SoftRF/wiki/Nodara-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/new-icon.jpg) - IP67
     * [**Card Edition**](https://github.com/lyusupov/SoftRF/wiki/Card-Edition)&nbsp;![](https://github.com/lyusupov/SoftRF/raw/master/documents/images/hot_icon.jpg) - IP65
     * [**Solaris Edition**](https://github.com/lyusupov/SoftRF/wiki/Solaris-Edition) - IP65
     * [**Pocket Edition**](https://github.com/lyusupov/SoftRF/wiki/Pocket-Edition) - IP66
