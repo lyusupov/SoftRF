@@ -133,6 +133,7 @@ extern SoftwareSerial swSer;
 #define EXCLUDE_SOFTRF_HEARTBEAT
 #define EXCLUDE_LK8EX1
 #define EXCLUDE_IMU
+#define EXCLUDE_BMP5XX
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 #define EXCLUDE_SPA06

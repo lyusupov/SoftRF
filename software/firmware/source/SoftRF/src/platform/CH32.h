@@ -261,6 +261,7 @@ extern  SPIClass RadioSPI;
 #define USE_NMEA_CFG             //  +    kb
 #define EXCLUDE_BMP180           //  -    kb
 //#define EXCLUDE_BMP280         //  -    kb
+#define EXCLUDE_BMP5XX           //  -    kb
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -    kb

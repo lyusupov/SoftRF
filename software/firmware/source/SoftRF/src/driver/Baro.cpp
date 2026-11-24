@@ -22,9 +22,10 @@
 
 barochip_ops_t *baro_chip = NULL;
 
-#if defined(EXCLUDE_BMP180) && defined(EXCLUDE_BMP280)    && \
-    defined(EXCLUDE_BME680) && defined(EXCLUDE_BME280AUX) && \
-    defined(EXCLUDE_MPL3115A2) && defined(EXCLUDE_SPA06)
+#if defined(EXCLUDE_BMP180)    && defined(EXCLUDE_BMP280)    && \
+    defined(EXCLUDE_BMP5XX)    && defined(EXCLUDE_BME680)    && \
+    defined(EXCLUDE_BME280AUX) && defined(EXCLUDE_MPL3115A2) && \
+    defined(EXCLUDE_SPA06)
 byte  Baro_setup()        {return BARO_MODULE_NONE;}
 void  Baro_loop()         {}
 void  Baro_fini()         {}
@@ -39,6 +40,9 @@ float Baro_temperature()  {return 0;}
 #if !defined(EXCLUDE_BMP280)
 #include <Adafruit_BMP280.h>
 #endif /* EXCLUDE_BMP280 */
+#if !defined(EXCLUDE_BMP5XX)
+#include <Adafruit_BMP5xx.h>
+#endif /* EXCLUDE_BMP5XX */
 #if !defined(EXCLUDE_BME680)
 #include <Adafruit_BME680.h>
 #endif /* EXCLUDE_BME680 */
@@ -60,6 +64,9 @@ Adafruit_BMP085 bmp180;
 #if !defined(EXCLUDE_BMP280)
 Adafruit_BMP280 bmp280;
 #endif /* EXCLUDE_BMP280 */
+#if !defined(EXCLUDE_BMP5XX)
+Adafruit_BMP5xx bmp5xx;
+#endif /* EXCLUDE_BMP5XX */
 #if !defined(EXCLUDE_BME680)
 Adafruit_BME680 bme680;
 #endif /* EXCLUDE_BME680 */
@@ -202,6 +209,72 @@ barochip_ops_t bmp280_ops = {
   bmp280_temperature
 };
 #endif /* EXCLUDE_BMP280 */
+
+#if !defined(EXCLUDE_BMP5XX)
+static bool bmp5xx_probe()
+{
+  return (
+          bmp5xx.begin((uint8_t) BMP5XX_DEFAULT_ADDRESS) ||
+          bmp5xx.begin((uint8_t) BMP5XX_ALTERNATIVE_ADDRESS)
+         );
+}
+
+static void bmp5xx_setup()
+{
+    // Configure sensor for optimal performance
+    bmp5xx.setTemperatureOversampling(BMP5XX_OVERSAMPLING_2X);
+    bmp5xx.setPressureOversampling(BMP5XX_OVERSAMPLING_16X);
+    bmp5xx.setIIRFilterCoeff(BMP5XX_IIR_FILTER_COEFF_3);
+    bmp5xx.setOutputDataRate(BMP5XX_ODR_50_HZ);
+    bmp5xx.setPowerMode(BMP5XX_POWERMODE_NORMAL);
+
+    Serial.print(F("Temperature = "));
+    Serial.print(bmp5xx.readTemperature());
+    Serial.println(F(" *C"));
+
+    Serial.print(F("Pressure = "));
+    Serial.print(bmp5xx.readPressure());
+    Serial.println(F(" hPa"));
+
+    Serial.print(F("Approx altitude = "));
+    Serial.print(bmp5xx.readAltitude(1013.25)); // this should be adjusted to your local forcase
+    Serial.println(F(" m"));
+
+    Serial.println();
+    delay(500);
+}
+
+static void bmp5xx_fini()
+{
+    bmp5xx.setPowerMode(BMP5XX_POWERMODE_DEEP_STANDBY);
+}
+
+static float bmp5xx_altitude(float sealevelPressure)
+{
+    return bmp5xx.readAltitude(sealevelPressure);
+}
+
+static float bmp5xx_pressure()
+{
+    return bmp5xx.readPressure() * 100;
+}
+
+static float bmp5xx_temperature()
+{
+    return bmp5xx.readTemperature();
+}
+
+barochip_ops_t bmp5xx_ops = {
+  BARO_MODULE_BMP5XX,
+  "BMP5XX",
+  bmp5xx_probe,
+  bmp5xx_setup,
+  bmp5xx_fini,
+  bmp5xx_altitude,
+  bmp5xx_pressure,
+  bmp5xx_temperature
+};
+#endif /* EXCLUDE_BMP5XX */
 
 #if !defined(EXCLUDE_BME680)
 static bool bme680_probe()
@@ -509,6 +582,12 @@ bool Baro_probe()
 #else
            false                                            ||
 #endif /* EXCLUDE_BMP280 */
+
+#if !defined(EXCLUDE_BMP5XX)
+           (baro_chip = &bmp5xx_ops,    baro_chip->probe()) ||
+#else
+           false                                            ||
+#endif /* EXCLUDE_BMP5XX */
 
 #if !defined(EXCLUDE_BME680)
            (baro_chip = &bme680_ops,    baro_chip->probe()) ||

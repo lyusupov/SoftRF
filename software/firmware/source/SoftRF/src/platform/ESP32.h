@@ -540,6 +540,7 @@ struct rst_info {
 #define EXCLUDE_LK8EX1
 //#define EXCLUDE_IMU
 //#define EXCLUDE_MAG
+#define EXCLUDE_BMP5XX
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 #define EXCLUDE_SPA06

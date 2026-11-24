@@ -169,6 +169,7 @@ typedef struct stm32_backup_struct {
 //#define EXCLUDE_OLED_049
 //#define EXCLUDE_OLED_BARO_PAGE
 #define USE_NMEA_CFG             //  +2.5 kb
+#define EXCLUDE_BMP5XX           //  -    kb
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
@@ -244,6 +245,7 @@ typedef struct stm32_backup_struct {
 #define USE_NMEA_CFG             //  +2.5 kb
 //#define EXCLUDE_BMP180         //  -  1 kb
 //#define EXCLUDE_BMP280         //  -  2 kb
+#define EXCLUDE_BMP5XX           //  -    kb
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
@@ -304,6 +306,7 @@ typedef struct stm32_backup_struct {
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_BMP180           //  -  1 kb
 #define EXCLUDE_BMP280           //  -  2 kb
+#define EXCLUDE_BMP5XX           //  -    kb
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
@@ -385,6 +388,7 @@ typedef struct stm32_backup_struct {
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_BMP180           //  -  1 kb
 //#define EXCLUDE_BMP280         //  -  2 kb
+#define EXCLUDE_BMP5XX           //  -    kb
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
@@ -450,6 +454,7 @@ typedef struct stm32_backup_struct {
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_BMP180           //  -  1 kb
 //#define EXCLUDE_BMP280         //  -  2 kb
+#define EXCLUDE_BMP5XX           //  -    kb
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb
@@ -518,6 +523,7 @@ typedef struct stm32_backup_struct {
 #define USE_NMEA_CFG             //  +2.5 kb
 #define EXCLUDE_BMP180           //  -  1 kb
 //#define EXCLUDE_BMP280         //  -  2 kb
+#define EXCLUDE_BMP5XX           //  -    kb
 #define EXCLUDE_BME680           //  -    kb
 #define EXCLUDE_BME280AUX        //  -    kb
 #define EXCLUDE_MPL3115A2        //  -  1 kb

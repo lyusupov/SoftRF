@@ -130,6 +130,7 @@ struct rst_info {
 #define SOC_GPIO_PIN_LED        15 // MOSI (DIO_09)
 
 #define EXCLUDE_BMP280
+#define EXCLUDE_BMP5XX
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 #define EXCLUDE_SPA06
@@ -189,6 +190,7 @@ struct rst_info {
 
 #define EXCLUDE_BMP180
 //#define EXCLUDE_BMP280
+#define EXCLUDE_BMP5XX
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 #define EXCLUDE_MPL3115A2
@@ -284,6 +286,7 @@ extern SCSerial                 scSerial;
 #define EXCLUDE_GNSS_UC65
 #define EXCLUDE_GNSS_AG33
 
+#define EXCLUDE_BMP5XX
 #define EXCLUDE_BME680
 #define EXCLUDE_BME280AUX
 #define EXCLUDE_SPA06
