@@ -96,3 +96,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * Arduino Core for nRF54L15 is developed by **Loren Bufanu**
  * Arduino EEPROM library is developed by **Jack Christensen**
  * Adafruit SPA06-003 library is developed by **Limor Fried**
+ * Adafruit BMP5xx library is developed by **Limor Fried**
