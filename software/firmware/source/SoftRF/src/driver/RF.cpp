@@ -245,23 +245,23 @@ void RF_SetChannel(void)
   case SOFTRF_MODE_NORMAL:
   default:
     pps_btime_ms = SoC->get_PPS_TimeMarker();
-    unsigned long time_corr_neg;
+    unsigned long time_corr;
     unsigned long ms_since_boot = millis();
 
     if (pps_btime_ms) {
       unsigned long last_Commit_Time = ms_since_boot - gnss.time.age();
       if (pps_btime_ms <= last_Commit_Time) {
-        time_corr_neg = (last_Commit_Time - pps_btime_ms) % 1000;
+        time_corr = (last_Commit_Time - pps_btime_ms) % 1000;
       } else {
-        time_corr_neg = 1000 - ((pps_btime_ms - last_Commit_Time) % 1000);
+        time_corr = 1000 - ((pps_btime_ms - last_Commit_Time) % 1000);
       }
       ref_time_ms = (ms_since_boot - pps_btime_ms) <= 1010 ?
                     pps_btime_ms :
                     ms_since_boot-(ms_since_boot % 1000)+(pps_btime_ms % 1000);
     } else {
       unsigned long last_RMC_Commit = ms_since_boot - gnss.date.age();
-      time_corr_neg = gnss_chip ? gnss_chip->rmc_ms : 100;
-      ref_time_ms = last_RMC_Commit - time_corr_neg;
+      time_corr = gnss_chip ? gnss_chip->rmc_ms : 100;
+      ref_time_ms = last_RMC_Commit - time_corr;
     }
 
     int yr    = gnss.date.year();
@@ -276,7 +276,7 @@ void RF_SetChannel(void)
     tm.Minute = gnss.time.minute();
     tm.Second = gnss.time.second();
 
-    Time = makeTime(tm) + (gnss.time.age() - time_corr_neg) / 1000;
+    Time = makeTime(tm) + (gnss.time.age() + time_corr) / 1000;
     break;
   }
 
